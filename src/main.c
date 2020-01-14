@@ -1,19 +1,26 @@
+#include <time.h>
 #include "motioncontroller.h"
 #include "missions.h"
 
+#define _GNU_SOURCE
+#define ROBOTPORT   8000 //24902//
+#define DEBUG 1
+
+
 int main(int argc, char **argv)
 {
-    int running,arg,time=0;
+    int running,arg,run_time=0;
     int mission_sq=0;
-    int debug = 1;
-    /*
-       log_counter = 0;
-       log_odo_counter = 1;
-       log_odo[0].time = 0;
-       log_odo[0].x = 0;
-       log_odo[0].y = 2;
-       log_odo[0].theta = 0;
-       */
+    // calibrate variables
+    FILE * fp;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    char * path;
+    // logging variables
+    char log_file_path[100];
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
 
     /* Establish connection to robot sensors and actuators.
     */
@@ -34,13 +41,9 @@ int main(int argc, char **argv)
         printf("Can't connect to rhd \n");
         exit(EXIT_FAILURE);
     }
+
     if(argc == 2)
     {
-        FILE * fp;
-        char * line = NULL;
-        size_t len = 0;
-        ssize_t read;
-        char * path;
         int r = asprintf(&path,"calib/smr%s_demo_ls_calib.dat",argv[1]);
 
         printf("%s:\n", path);
@@ -90,7 +93,29 @@ int main(int argc, char **argv)
             laser_calib_white[i] = 1;
         }
 
+        printf("No calibration data read:\n");
     }
+
+
+    // set up logging
+    strftime(log_file_path, sizeof(log_file_path)-1, "log/%Y-%m-%d_%H-%M-%S.dat", t);
+    printf("Logfile name: %s", log_file_path);
+
+    exit(0);
+    fp = fopen(log_file_path, "w");
+    if (fp != NULL )
+    {
+            fprintf(fp ,"time  x  y theta  "\
+                   "goal_theta  motorspeed_l  motorspeed_r "\
+                   " speedcmd: mission stat  motiontype "\
+                   " linesensor0 linesensor1 linesensor2 linesensor3 linesensor4 linesensor5 linesensor6 linesensor7 "\
+                    );
+          //fprintf(fp, "%d, %f, %f, %f\n", log_odo[i].time, log_odo[i].x, log_odo[i].y, log_odo[i].theta);
+    }
+
+
+
+
     // connect to robot I/O variables
     lenc=getinputref("encl",inputtable);
     renc=getinputref("encr",inputtable);
@@ -182,7 +207,7 @@ int main(int argc, char **argv)
     running=1;
     mission.state=ms_init;
     mission.oldstate=-1;
-    
+
     while (running)
     {
         if (lmssrv.config && lmssrv.status && lmssrv.connected)
@@ -203,9 +228,9 @@ int main(int argc, char **argv)
         odo.right_enc=renc->data[0];
         update_odo(&odo);
 
-        /****************************************
-          / mission statemachine
-          */
+        /***********************************
+         *  mission statemachine
+         */
         sm_update(&mission);
         if(!mission_sq)
             mission_sq = mission_square();
@@ -217,9 +242,14 @@ int main(int argc, char **argv)
         mot.right_pos=odo.right_pos;
         update_motcon(&mot);
 
-        if (debug)
+        if (DEBUG)
         {
-            printf("time %05d, x : %f, y : %f, theta : %f, goal_theta : %f, motorspeed_l : %f, motorspeed_r : %f speedcmd: %f, mission stat : %d  motiontype :%d\n", mission.time, odo.x, odo.y, odo.theta, mot.GoalTheta,mot.motorspeed_l, mot.motorspeed_r, mot.speedcmd, mission.state, mot.curcmd);
+            printf("time %05d, x : %f, y : %f, theta : %f, "\
+                   "goal_theta : %f, motorspeed_l : %f, motorspeed_r : %f"\
+                   " speedcmd: %f, mission stat : %d  motiontype :%d\n",
+                    mission.time, odo.x, odo.y, odo.theta, mot.GoalTheta,
+                    mot.motorspeed_l, mot.motorspeed_r, mot.speedcmd,
+                    mission.state, mot.curcmd);
             printf (  "Line sensor: ");
             for(int i=0; i<8; i++){
                 printf ( "%f ",IR_calib[i]);
@@ -231,9 +261,9 @@ int main(int argc, char **argv)
         speedl->updated=1;
         speedr->data[0]=100*mot.motorspeed_r;
         speedr->updated=1;
-        if (time  % 100 ==0)
+        if (run_time  % 100 ==0)
             //    printf(" laser %f \n",laserpar[3]);
-            time++;
+            run_time++;
         /* stop if keyboard is activated
          *
          */
@@ -255,6 +285,7 @@ int main(int argc, char **argv)
           }
           fclose(fp);
           */
+  fclose(fp);
     rhdSync();
     rhdDisconnect();
     exit(0);
