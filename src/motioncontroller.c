@@ -108,11 +108,11 @@ void update_motcon(motiontype *p)
         double traveldist = (p->right_pos+p->left_pos)/2 - p->startpos;
         double acceldist=(sqrt(2 * accel*SAMPLERATE * (p->dist - traveldist)));
         double hyst = accel;
-    	mot.K = 0.01;
+    	mot.K = 0.0002;
         if(p->curcmd==mot_move)
         {
             mot.domega = mot.K*(mot.GoalTheta-odo.theta);
-            mot.dV = mot.domega/(odo.w/2);
+            mot.dV = fabs(mot.domega/(odo.w/2));
         }
         else if(p->curcmd==mot_follow_line)
         {
@@ -257,7 +257,6 @@ void update_motcon(motiontype *p)
                     p->finished=1;
                 }
             }
-
             break;
     }
 /*

@@ -4,7 +4,7 @@
 #include "motioncontroller.h"
 #include "missions.h"
 
-#define ROBOTPORT   8000 //24902//
+#define ROBOTPORT  24902 //8000 ////
 #define DEBUG 0
 
 
