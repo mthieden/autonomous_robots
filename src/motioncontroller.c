@@ -118,7 +118,7 @@ void update_motcon(motiontype *p)
         {
 		update_IR();
             int line_index = lin_pos_com();
-		printf("\n   line index : %d", line_index);
+		//printf("\n   line index : %d", line_index);
             double line_com = 0;
             double line_k = 0.5;
             if (line_index <= -1)
@@ -138,7 +138,7 @@ void update_motcon(motiontype *p)
             mot.domega = mot.K*(mot.GoalTheta - odo.theta - line_k * line_com);
 	    mot.GoalTheta -= mot.domega;
             mot.dV = mot.domega/(odo.w/2);
-            printf("domega %f, dV %f  line_index : %d, line_com :%f",mot.domega, mot.dV, line_index, line_com);
+            //printf("domega %f, dV %f  line_index : %d, line_com :%f",mot.domega, mot.dV, line_index, line_com);
         }
 /*
         printf("\n acceldist : %f",acceldist);
@@ -216,12 +216,12 @@ void update_motcon(motiontype *p)
             else if(odo.theta>mot.GoalTheta)
             {
                 p->motorspeed_r-= mot.dV;
-                printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
+                //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
             }
             else if(odo.theta<mot.GoalTheta)
             {
                 p->motorspeed_l-= mot.dV;
-                printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
+                //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
             }
       break;
 
@@ -366,6 +366,6 @@ int lin_pos_com(void)
         weight_sum+=(i+1)*(1-IR_calib[i]);
     }
     index = (weight_sum/sum)-1;
-    printf("\n sum: %f, weighted sum: %f, index: %f", sum, weight_sum, index);
+    //printf("\n sum: %f, weighted sum: %f, index: %f", sum, weight_sum, index);
     return index;
 }

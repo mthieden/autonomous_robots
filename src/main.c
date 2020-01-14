@@ -1,10 +1,11 @@
+#define _GNU_SOURCE
+#include <stdio.h>
 #include <time.h>
 #include "motioncontroller.h"
 #include "missions.h"
 
-#define _GNU_SOURCE
 #define ROBOTPORT   8000 //24902//
-#define DEBUG 1
+#define DEBUG 0
 
 
 int main(int argc, char **argv)
@@ -92,25 +93,41 @@ int main(int argc, char **argv)
             laser_calib_black[i] = 1;
             laser_calib_white[i] = 1;
         }
-
         printf("No calibration data read:\n");
     }
 
 
     // set up logging
-    strftime(log_file_path, sizeof(log_file_path)-1, "log/%Y-%m-%d_%H-%M-%S.dat", t);
-    printf("Logfile name: %s", log_file_path);
+    strftime(log_file_path, sizeof(log_file_path)-1, "log/%Y-%m-%d_", t);
+    int path_found =1;
+    char temp[100];
+    char *dest;
+    while(path_found)
+    {
+        strcpy(temp, log_file_path);
+        asprintf(&dest,"%05d.dat",path_found);
 
-    exit(0);
+        strcat(temp, dest);
+        if((fp = fopen(dest,"r"))!=NULL)
+        {
+            fclose(fp);
+            path_found++;
+        }
+        else
+        {
+            strcpy(log_file_path, temp);
+            path_found = 0;
+        }
+    }
+    printf("Logfile name: %s\n", log_file_path);
+
     fp = fopen(log_file_path, "w");
     if (fp != NULL )
     {
-            fprintf(fp ,"time  x  y theta  "\
-                   "goal_theta  motorspeed_l  motorspeed_r "\
-                   " speedcmd: mission stat  motiontype "\
-                   " linesensor0 linesensor1 linesensor2 linesensor3 linesensor4 linesensor5 linesensor6 linesensor7 "\
-                    );
-          //fprintf(fp, "%d, %f, %f, %f\n", log_odo[i].time, log_odo[i].x, log_odo[i].y, log_odo[i].theta);
+            fprintf(fp ,"%14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s\n",
+                    "time", "x", "y", "theta", "goal_theta", "motorspeed_l", "motorspeed_r", "speedcmd",
+                    "mission_state", "motiontype", "linesensor0", "linesensor1", "linesensor2", "linesensor3",
+                    "linesensor4", "linesensor5", "linesensor6", "linesensor7" );
     }
 
 
@@ -208,6 +225,7 @@ int main(int argc, char **argv)
     mission.state=ms_init;
     mission.oldstate=-1;
 
+    printf("Starting program\n");
     while (running)
     {
         if (lmssrv.config && lmssrv.status && lmssrv.connected)
@@ -242,6 +260,10 @@ int main(int argc, char **argv)
         mot.right_pos=odo.right_pos;
         update_motcon(&mot);
 
+        fprintf(fp ,"%14d %14f %14f %14f %14f %14f %14f %14f %14d %14d %14f %14f %14f %14f %14f %14f %14f %14f\n",
+                mission.time, odo.x, odo.y, odo.theta, mot.GoalTheta, mot.motorspeed_l, mot.motorspeed_r, mot.speedcmd,
+                mission.state, mot.curcmd, IR_calib[0], IR_calib[1], IR_calib[2], IR_calib[3], IR_calib[4], IR_calib[5],
+                IR_calib[6], IR_calib[7] );
         if (DEBUG)
         {
             printf("time %05d, x : %f, y : %f, theta : %f, "\
@@ -275,17 +297,7 @@ int main(int argc, char **argv)
     speedl->updated=1;
     speedr->data[0]=0;
     speedr->updated=1;
-
-    /*    //write log
-          FILE *fp;
-
-          fp = fopen("/home/smr/k385/NHR/square/logaccturn02.dat", "w");
-          for(int i = 0; i < log_odo_counter; i++){
-          fprintf(fp, "%d, %f, %f, %f\n", log_odo[i].time, log_odo[i].x, log_odo[i].y, log_odo[i].theta);
-          }
-          fclose(fp);
-          */
-  fclose(fp);
+    fclose(fp);
     rhdSync();
     rhdDisconnect();
     exit(0);
