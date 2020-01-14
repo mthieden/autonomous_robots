@@ -108,7 +108,7 @@ int main(int argc, char **argv)
         asprintf(&dest,"%05d.dat",path_found);
 
         strcat(temp, dest);
-        if((fp = fopen(dest,"r"))!=NULL)
+        if((fp = fopen(temp,"r"))!=NULL)
         {
             fclose(fp);
             path_found++;
