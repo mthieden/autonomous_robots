@@ -108,7 +108,7 @@ struct xml_in *xmllaser;
 componentservertype lmssrv,camsrv;
 double visionpar[10];
 double laserpar[10];
-double IR_calib[8];
+double LS_calib[8];
 double laser_calib_black[8];
 double laser_calib_white[8];
 
@@ -134,7 +134,7 @@ void xml_proca(struct xml_in *x);
 
 void reset_odo(odotype *p);
 void update_odo(odotype *p);
-void update_IR(void);
+void update_lin_sens(void);
 
 void update_motcon(motiontype *p);
 int fwd(double dist, double speed,int time);

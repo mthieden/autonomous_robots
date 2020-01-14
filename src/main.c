@@ -222,7 +222,7 @@ int main(int argc, char **argv)
             printf("time %05d, x : %f, y : %f, theta : %f, goal_theta : %f, motorspeed_l : %f, motorspeed_r : %f speedcmd: %f, mission stat : %d  motiontype :%d\n", mission.time, odo.x, odo.y, odo.theta, mot.GoalTheta,mot.motorspeed_l, mot.motorspeed_r, mot.speedcmd, mission.state, mot.curcmd);
             printf (  "Line sensor: ");
             for(int i=0; i<8; i++){
-                printf ( "%f ",IR_calib[i]);
+                printf ( "%f ",LS_calib[i]);
             };
             printf ( "\n");
         }

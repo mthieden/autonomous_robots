@@ -116,7 +116,7 @@ void update_motcon(motiontype *p)
         }
         else if(p->curcmd==mot_follow_line)
         {
-		update_IR();
+		update_lin_sens();
             int line_index = lin_pos_com();
 		printf("\n   line index : %d", line_index);
             double line_com = 0;
@@ -330,13 +330,13 @@ void sm_update(smtype *p)
 }
 
 
-void update_IR(void)
+void update_lin_sens(void)
 {
     int LA=0; 	//Low average
     int HA=128; 	//High average
     for(int i=0; i<8; i++)
     {
-        IR_calib[i]=(linesensor->data[i]-LA)/(HA-LA);
+        LS_calib[i]=(linesensor->data[i]-LA)/(HA-LA);
     }
 }
 
@@ -346,9 +346,9 @@ int lin_pos(void)
 	double max=0.9;
 	for (int i=0; i<8; i++)
 	{
-		if(IR_calib[i]<max)
+		if(LS_calib[i]<max)
 			{
-		        max=IR_calib[i];
+		        max=LS_calib[i];
                 index=i;
 			}
 	}
@@ -362,8 +362,8 @@ int lin_pos_com(void)
     double weight_sum=0;
     for (int i=0; i<8; i++)
     {
-        sum+=1-IR_calib[i];
-        weight_sum+=(i+1)*(1-IR_calib[i]);
+        sum+=1-LS_calib[i];
+        weight_sum+=(i+1)*(1-LS_calib[i]);
     }
     index = (weight_sum/sum)-1;
     printf("\n sum: %f, weighted sum: %f, index: %f", sum, weight_sum, index);
