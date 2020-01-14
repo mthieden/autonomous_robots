@@ -32,7 +32,7 @@
 #define WHEEL_DIAMETER   0.06522	/* m */
 #define WHEEL_SEPARATION 0.26	/* m */
 #define DELTA_M (M_PI * WHEEL_DIAMETER / 2000)
-#define ROBOTPORT	8000 //24902//
+#define ROBOTPORT	24902 // 8000 //24902//
 #define SAMPLERATE	100
 
 struct
@@ -84,6 +84,7 @@ typedef struct
     double angle;
     double GoalTheta;
     double left_pos,right_pos;
+    char fl_colour; //Colour of follow line
     // parameters
     double w;
     //output
@@ -138,10 +139,10 @@ void update_lin_sens(void);
 
 void update_motcon(motiontype *p);
 int fwd(double dist, double speed,int time);
-int follow_line(double dist, double speed,int time);
+int follow_line(double dist, double speed,int time, char colour);
 int turn(double angle, double speed,int time);
-int lin_pos(void);
-int lin_pos_com(void);
+int lin_pos();
+int lin_pos_com();
 void sm_update(smtype *p);
 
 symTableElement* getinputref(const char *sym_name, symTableElement * tab);

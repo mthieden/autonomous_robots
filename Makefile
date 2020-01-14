@@ -4,7 +4,7 @@
 CC      = gcc
 LD      = ${CC}
 #SMR     = /usr/local/smr
-SMR     = $(shell if [ -f "/etc/redhat-release" ]; then echo "/home/thieden/Desktop/autonomous-robot-systems/mobotware-3.1125/build"; elif [ -f "/etc/debian_version" ]; then echo "/usr/local/smr"; fi)
+SMR     = $(shell if [ -f "/etc/redhat-release" ]; then echo "/home/mthieden/Desktop/autonomous-robot-systems/mobotware-3.1125/build"; elif [ -f "/etc/debian_version" ]; then echo "/usr/local/smr"; fi)
 CFLAGS  = -Wall -O2 -I${SMR}/include
 LDFLAGS = -L${SMR}/lib
 

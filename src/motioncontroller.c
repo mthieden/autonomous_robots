@@ -108,11 +108,11 @@ void update_motcon(motiontype *p)
         double traveldist = (p->right_pos+p->left_pos)/2 - p->startpos;
         double acceldist=(sqrt(2 * accel*SAMPLERATE * (p->dist - traveldist)));
         double hyst = accel;
-    	mot.K = 0.01;
+    	mot.K = 0.0002;
         if(p->curcmd==mot_move)
         {
             mot.domega = mot.K*(mot.GoalTheta-odo.theta);
-            mot.dV = mot.domega/(odo.w/2);
+            mot.dV = fabs(mot.domega/(odo.w/2));
         }
         else if(p->curcmd==mot_follow_line)
         {
@@ -287,10 +287,15 @@ int fwd(double dist, double speed,int time)
         return mot.finished;
 }
 
-int follow_line(double dist, double speed,int time)
+int follow_line(double dist, double speed,int time, char colour)
 {
-    if (time==0)
+
+    if(colour!='w' && colour !='b')
+    //if(strcmp('w','w')!=0)
+        {return -1;}
+    else if (time==0)
     {
+        mot.fl_colour=colour;
         mot.cmd=mot_follow_line;
         mot.speedcmd=speed;
         mot.dist=dist;
@@ -332,38 +337,49 @@ void sm_update(smtype *p)
 
 void update_lin_sens(void)
 {
-    int LA=0; 	//Low average
-    int HA=128; 	//High average
-    for(int i=0; i<8; i++)
+    //laser_calib_black; 	//Low average
+    //laser_calib_white; 	//High average
+    if (mot.fl_colour=='b')
     {
-        LS_calib[i]=(linesensor->data[i]-LA)/(HA-LA);
+        for(int i=0; i<8; i++)
+        {
+            LS_calib[i]=1-((linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]));        
+        }
+    }
+
+    else
+    {
+    for(int i=0; i<8; i++)
+        {
+            LS_calib[i]=(linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]);
+        }
     }
 }
 
-int lin_pos(void)
+int lin_pos()
 {
-	int index=-1;
-	double max=0.9;
-	for (int i=0; i<8; i++)
-	{
-		if(LS_calib[i]<max)
+    int index=-1;
+    double max=0.9;
+    for (int i=0; i<8; i++)
+    {
+    	if(LS_calib[i]<max)
 			{
-		        max=LS_calib[i];
+   		        max=LS_calib[i];
                 index=i;
-			}
-	}
+   			}
+    }
 	return index;
 }
 
-int lin_pos_com(void)
+int lin_pos_com()
 {
     double index=-1;
     double sum=0;
     double weight_sum=0;
     for (int i=0; i<8; i++)
     {
-        sum+=1-LS_calib[i];
-        weight_sum+=(i+1)*(1-LS_calib[i]);
+        sum+=LS_calib[i];
+        weight_sum+=(i+1)*(LS_calib[i]);
     }
     index = (weight_sum/sum)-1;
     printf("\n sum: %f, weighted sum: %f, index: %f", sum, weight_sum, index);

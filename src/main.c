@@ -208,7 +208,7 @@ int main(int argc, char **argv)
           */
         sm_update(&mission);
         if(!mission_sq)
-            mission_sq = mission_square();
+            mission_sq = mission_follow_line();
         else
             running =0;
         /*  end of mission  */
