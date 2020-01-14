@@ -29,6 +29,6 @@ run:
 	@:
 
 clean:
-	rm -f ${OBJS}
+	rm -f ${OBJS} ${PROG}
 
 ${OBJS}: ${HDRS} Makefile

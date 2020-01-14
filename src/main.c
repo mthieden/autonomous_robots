@@ -262,8 +262,8 @@ int main(int argc, char **argv)
 
         fprintf(fp ,"%14d %14f %14f %14f %14f %14f %14f %14f %14d %14d %14f %14f %14f %14f %14f %14f %14f %14f\n",
                 mission.time, odo.x, odo.y, odo.theta, mot.GoalTheta, mot.motorspeed_l, mot.motorspeed_r, mot.speedcmd,
-                mission.state, mot.curcmd, IR_calib[0], IR_calib[1], IR_calib[2], IR_calib[3], IR_calib[4], IR_calib[5],
-                IR_calib[6], IR_calib[7] );
+                mission.state, mot.curcmd, LS_calib[0], LS_calib[1], LS_calib[2], LS_calib[3], LS_calib[4], LS_calib[5],
+                LS_calib[6], LS_calib[7] );
         if (DEBUG)
         {
             printf("time %05d, x : %f, y : %f, theta : %f, "\
