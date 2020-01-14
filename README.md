@@ -3,25 +3,25 @@
 This git contains our solution for the 3-week project of Autonomous robot systems
 Our project has the following structure
 .
-├── bin
-├── calib
-│      ├── data.debug
-│      ├── log
-│      ├── robot.conf
-│      ├── smr9_demo_ls_calib.dat
-│      ├── smr9_demo_odo_calib.dat
-│      └── smrxqptest
-├── log
-│       ├── 2020-01-14_00001.dat
-│       └── README.md
-├── Makefile
-└── src
-          ├── main.c
-          ├── missions.c
-          ├── missions.h
-          ├── motioncontroller.c
-          ├── motioncontroller.h
-          └── serverif.c
+├── bin \
+├── calib \
+│      ├── data.debug \
+│      ├── log \
+│      ├── robot.conf \
+│      ├── smr9_demo_ls_calib.dat \
+│      ├── smr9_demo_odo_calib.dat \
+│      └── smrxqptest \
+├── log \
+│       ├── 2020-01-14_00001.dat \
+│       └── README.md \
+├── Makefile \
+└── src \
+          ├── main.c \
+          ├── missions.c \
+          ├── missions.h \
+          ├── motioncontroller.c \
+          ├── motioncontroller.h \
+          └── serverif.c \
 
 
 
