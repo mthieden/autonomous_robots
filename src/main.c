@@ -6,14 +6,6 @@ int main(int argc, char **argv)
     int running,arg,time=0;
     int mission_sq=0;
     int debug = 1;
-    /*
-       log_counter = 0;
-       log_odo_counter = 1;
-       log_odo[0].time = 0;
-       log_odo[0].x = 0;
-       log_odo[0].y = 2;
-       log_odo[0].theta = 0;
-       */
 
     /* Establish connection to robot sensors and actuators.
     */
@@ -24,16 +16,19 @@ int main(int argc, char **argv)
     }
 
     printf("connected to robot \n");
+
     if ((inputtable=getSymbolTable('r'))== NULL)
     {
         printf("Can't connect to rhd \n");
         exit(EXIT_FAILURE);
     }
+
     if ((outputtable=getSymbolTable('w'))== NULL)
     {
         printf("Can't connect to rhd \n");
         exit(EXIT_FAILURE);
     }
+
     if(argc == 2)
     {
         FILE * fp;
@@ -82,6 +77,7 @@ int main(int argc, char **argv)
         }
 
     }
+
     if(laser_calib_black==NULL || laser_calib_white==NULL )
     {
         for(int i = 0; i < 8; i++)
@@ -91,6 +87,19 @@ int main(int argc, char **argv)
         }
 
     }
+
+    // set up logging
+    char log_file_path[100];
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+
+
+    strftime(log_file_path, sizeof(log_file_path)-1, "%d %m %Y %H:%M", t);
+    printf("Current Date: %s", text);
+
+    exit(0);
+
+
     // connect to robot I/O variables
     lenc=getinputref("encl",inputtable);
     renc=getinputref("encr",inputtable);
@@ -182,7 +191,7 @@ int main(int argc, char **argv)
     running=1;
     mission.state=ms_init;
     mission.oldstate=-1;
-    
+
     while (running)
     {
         if (lmssrv.config && lmssrv.status && lmssrv.connected)
