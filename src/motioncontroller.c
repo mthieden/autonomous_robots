@@ -75,7 +75,9 @@ void update_motcon(motiontype *p)
 {
     double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
     double speed=0;
-
+    update_IR();
+    line_cross();
+	    
     if (p->cmd !=0)
     {
         p->finished=0;
@@ -338,6 +340,23 @@ void update_IR(void)
     {
         IR_calib[i]=(linesensor->data[i]-LA)/(HA-LA);
     }
+}
+
+int line_cross(void)
+{
+    int line_trigger = 0;
+    for(int i=0; i<8; i++)
+    {
+    	line_trigger+=IR_calib[i]
+    }
+	if(line_cross<=4){
+		line_trigger=0;
+		return 1;
+	}
+	else{
+		line_trigger=0;
+		return 0;
+	}
 }
 
 int lin_pos(void)
