@@ -105,6 +105,8 @@ double laserpar[10];
 double LS_calib[8];
 double laser_calib_black[8];
 double laser_calib_white[8];
+double ir_calib_15[6];
+double ir_calib_40[6];
 
 // SMR input/output data
 symTableElement *  inputtable,*outputtable;

@@ -54,27 +54,28 @@ int main(int argc, char **argv)
     }
     printf("Success! connected to output SymbolTable \n\n");
 
+    printf("*******************************************\n");
     if(argc == 2)
     {
-        printf("*******************************************\n");
         printf("**       Reading calibration data        **\n");
         printf("*******************************************\n\n");
         printf("- Reading laser calbration data \n\n");
 
+        int index;
         int r = asprintf(&path,"calib/smr%s_demo_ls_calib.dat",argv[1]);
         printf("%s:\n", path);
         fp = fopen(path, "r");
         if (fp != NULL || r !=-1)
         {
             while ((read = getline(&line, &len, fp)) != -1) {
-                int index = line[18] - '0' -1 ;
+                index = line[18] - '0' -1 ;
                 if(line[12]=='w')
                 {
-                    laser_calib_white[index] = strtod(line, NULL);
+                    laser_calib_white[index] = strtof(line, NULL);
                 }
                 else if(line[12]=='b')
                 {
-                    laser_calib_black[index] = strtod(line, NULL);
+                    laser_calib_black[index] = strtof(line, NULL);
                 }
             }
             printf("Success! laser calbration data read \n\n");
@@ -82,6 +83,11 @@ int main(int argc, char **argv)
         }
         else
         {
+            for(int i = 0; i < 8; i++)
+            {
+                laser_calib_black[i] = 0;
+                laser_calib_white[i] = 128;
+            }
             printf("Failed! could not read laser data!\n\n");
         }
 
@@ -92,11 +98,10 @@ int main(int argc, char **argv)
         if (fp != NULL || r !=-1)
         {
             read = getline(&line, &len, fp);
-            printf("%s\n",line);
-            double l = strtof(line, NULL);
+            odo.w = strtof(line, NULL);
             double l1 = strtof(line, NULL);
             double l2 = strtof(line, NULL);
-            printf("lol %f %f %f\n",l,l1,l2);
+            printf("lol %f %f %f\n",odo.w,l1,l2);
             printf("Success! odemetri calbration data read \n\n");
             fclose(fp);
         }
@@ -105,27 +110,59 @@ int main(int argc, char **argv)
             printf("Failed! could not read odemetri data!\n\n");
         }
 
+        printf("- Reading IR calbration data \n\n");
+        r = asprintf(&path,"calib/smr%s_demo_ir_calib.dat",argv[1]);
+        fp = fopen(path, "r");
+        if (fp != NULL || r !=-1)
+        {
+            index = 0;
+            while ((read = getline(&line, &len, fp)) != -1)
+            {
+                ir_calib_15[index] = strtof(line, NULL);
+                ir_calib_40[index] = strtof(&line[7], NULL);
+                index++;
+            }
+            printf("Success! IR calbration data read \n\n");
+            printf("Success! IR calbration data read \n\n");
+            fclose(fp);
+        }
+        else
+        {
+            for(int i = 0; i < 6; i++)
+            {
+                ir_calib_15[i] = 0;
+                ir_calib_40[i] = 128;
+            }
+            printf("Failed! could not read IR data!\n\n");
+        }
+
     }
     else
     {
-        printf("*******************************************\n");
-        printf("**       Creating calibration data\n\n");
+        printf("**       Creating calibration data       **\n");
+        printf("*******************************************\n\n");
 
         for(int i = 0; i < 8; i++)
         {
             laser_calib_black[i] = 0;
             laser_calib_white[i] = 128;
         }
+        for(int i = 0; i < 6; i++)
+        {
+            ir_calib_15[i] = 0;
+            ir_calib_40[i] = 128;
+        }
+        odo.w=0.256;
     }
-    printf("Current calibration data:\n");
-    printf("black : ");
+    printf("**       Current calibration data:\n");
+    printf("Black line values :\n");
     for(int i = 0 ; i<8; i++)
     {
         printf("%f ",laser_calib_black[i]);
 
     }
     printf("\n");
-    printf("white : ");
+    printf("White line values :\n");
     for(int i = 0 ; i<8; i++)
     {
         printf("%f ",laser_calib_white[i]);
@@ -133,9 +170,26 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
+    printf("IR 15 cm : \n");
+    for(int i = 0 ; i<6; i++)
+    {
+        printf("%f ",ir_calib_15[i]);
+
+    }
+    printf("\n");
+    printf("IR 40 cm : \n");
+    for(int i = 0 ; i<6; i++)
+    {
+        printf("%f ",ir_calib_40[i]);
+
+    }
+    printf("\n");
+
 
 
     // set up logging
+    printf("\n\n");
+    printf("Creating log file \n");
     strftime(log_file_path, sizeof(log_file_path)-1, "log/%Y-%m-%d_", t);
     int path_found =1;
     char temp[100];
@@ -157,15 +211,15 @@ int main(int argc, char **argv)
             path_found = 0;
         }
     }
-    printf("Logfile name: %s\n", log_file_path);
+    printf("Logfile name: %s\n\n", log_file_path);
 
     fp = fopen(log_file_path, "w");
     if (fp != NULL )
     {
-            fprintf(fp ,"%14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s\n",
-                    "time", "x", "y", "theta", "goal_theta", "motorspeed_l", "motorspeed_r", "speedcmd",
-                    "mission_state", "motiontype", "linesensor0", "linesensor1", "linesensor2", "linesensor3",
-                    "linesensor4", "linesensor5", "linesensor6", "linesensor7" );
+        fprintf(fp ,"%14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s\n",
+                "time", "x", "y", "theta", "goal_theta", "motorspeed_l", "motorspeed_r", "speedcmd",
+                "mission_state", "motiontype", "linesensor0", "linesensor1", "linesensor2", "linesensor3",
+                "linesensor4", "linesensor5", "linesensor6", "linesensor7" );
     }
 
 
@@ -251,7 +305,7 @@ int main(int argc, char **argv)
     */
     rhdSync();
 
-    odo.w=0.256;
+    //odo.w=0.256;
     mot.w=odo.w;
     odo.cr=DELTA_M;
     odo.cl=odo.cr;
@@ -305,8 +359,8 @@ int main(int argc, char **argv)
         if (DEBUG)
         {
             printf("time %05d, x : %f, y : %f, theta : %f, "\
-                   "goal_theta : %f, motorspeed_l : %f, motorspeed_r : %f"\
-                   " speedcmd: %f, mission stat : %d  motiontype :%d\n",
+                    "goal_theta : %f, motorspeed_l : %f, motorspeed_r : %f"\
+                    " speedcmd: %f, mission stat : %d  motiontype :%d\n",
                     mission.time, odo.x, odo.y, odo.theta, mot.GoalTheta,
                     mot.motorspeed_l, mot.motorspeed_r, mot.speedcmd,
                     mission.state, mot.curcmd);
