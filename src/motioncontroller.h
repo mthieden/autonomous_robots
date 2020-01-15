@@ -64,6 +64,7 @@ typedef struct{ //input signals
 		int left_enc_old, right_enc_old;
 		int time;
 		double x, y, theta;
+        double index;
 		} odotype;
 /*
  * Motion control struct

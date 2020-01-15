@@ -75,7 +75,7 @@ void update_motcon(motiontype *p)
 {
     double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
     double speed=0;
-    int line_index =-1;
+    odo.index=3.5;
 
     if (p->cmd !=0)
     {
@@ -118,19 +118,19 @@ void update_motcon(motiontype *p)
         else if(p->curcmd==mot_follow_line)
         {
 		update_lin_sens();
-            line_index = lin_pos_com();
+            odo.index = lin_pos_com();
 		//printf("\n   line index : %d", line_index);
             double line_com = 0;
-            double line_k = 0.1l5;
-            if (line_index == -1)
+            double line_k = 0.05;
+            if (odo.index == -1)
             {
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
                 p->finished=1;
             }
-            else if (line_index >= 0)
+            else if (odo.index >= 0)
             {
-                 line_com = line_index - 3.5;
+                 line_com = odo.index - 3.5;
             }
 
             mot.domega = mot.K*(mot.GoalTheta - odo.theta);
@@ -200,7 +200,7 @@ void update_motcon(motiontype *p)
 
        case mot_move:
        case mot_follow_line:
-            if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(line_index==-1 && p->curcmd==mot_follow_line))
+            if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(odo.index==-1 && p->curcmd==mot_follow_line))
             {
                 p->finished=1;
                 p->motorspeed_l=0;
