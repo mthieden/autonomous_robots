@@ -64,6 +64,7 @@ typedef struct{ //input signals
 		int left_enc_old, right_enc_old;
 		int time;
 		double x, y, theta;
+        double index;
 		} odotype;
 /*
  * Motion control struct
@@ -136,7 +137,7 @@ int fwd(double dist, double speed,int time);
 int follow_line(double dist, double speed,int time, char colour);
 int turn(double angle, double speed,int time);
 int lin_pos();
-int lin_pos_com();
+double lin_pos_com();
 void sm_update(smtype *p);
 
 symTableElement* getinputref(const char *sym_name, symTableElement * tab);

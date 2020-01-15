@@ -90,8 +90,8 @@ int main(int argc, char **argv)
     {
         for(int i = 0; i < 8; i++)
         {
-            laser_calib_black[i] = 1;
-            laser_calib_white[i] = 1;
+            laser_calib_black[i] = 0;
+            laser_calib_white[i] = 128;
         }
         printf("No calibration data read:\n");
     }
