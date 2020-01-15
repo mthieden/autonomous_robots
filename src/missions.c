@@ -45,9 +45,13 @@ int mission_follow_line()
             mission.state= ms_follow;
             break;
 
+        case ms_fwd:
+
+            if (fwd(0.5,0.3,mission.time))  mission.state=ms_follow;
+            break;
 
         case ms_follow:
-            if (follow_line(5,0.1,mission.time,'w'))  {
+            if (follow_line(4,0.3,mission.time,'b'))  {
                 printf (  "follow \n ");
                 mission.state=ms_end;
             }

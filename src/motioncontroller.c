@@ -109,19 +109,21 @@ void update_motcon(motiontype *p)
         double traveldist = (p->right_pos+p->left_pos)/2 - p->startpos;
         double acceldist=(sqrt(2 * accel*SAMPLERATE * (p->dist - traveldist)));
         double hyst = accel;
-    	mot.K = 0.003;
+
         if(p->curcmd==mot_move)
         {
+            mot.K = 0.003;
             mot.domega = mot.K*(mot.GoalTheta-odo.theta);
             mot.dV = fabs(mot.domega*(odo.w/2));
         }
         else if(p->curcmd==mot_follow_line)
         {
-		update_lin_sens();
-            odo.index = lin_pos_com();
+		      update_lin_sens();
+              odo.index = lin_pos_com();
+              mot.K = 3; //0.05
 		//printf("\n   line index : %d", line_index);
             double line_com = 0;
-            double line_k = 0.01;
+            double line_k = -0.076/100;//0.01;
             if (odo.index == -1)
             {
                 p->motorspeed_l=0;
@@ -133,8 +135,14 @@ void update_motcon(motiontype *p)
                  line_com = odo.index - 3.5;
             }
 
-	    mot.GoalTheta -= line_k * line_com;
-            mot.domega = mot.K*(mot.GoalTheta - odo.theta);
+
+	        mot.GoalTheta -= line_k * line_com;
+            mot.domega = fabs(mot.K*(mot.GoalTheta - odo.theta));
+
+/*
+            mot.domega = mot.K*(mot.GoalTheta - odo.theta - line_k * line_com);
+            mot.GoalTheta -= mot.domega;
+*/
             mot.dV = fabs(mot.domega*(odo.w/2));
             //printf("domega %f, dV %f  line_index : %d, line_com :%f",mot.domega, mot.dV, line_index, line_com);
         }
@@ -206,7 +214,7 @@ void update_motcon(motiontype *p)
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
             }
-            else if(fabs(mot.GoalTheta-odo.theta)<(1*M_PI)/180)
+            else if(fabs(mot.GoalTheta-odo.theta)<(5*M_PI)/180)
             {
                 p->motorspeed_l=speed;
                 p->motorspeed_r=speed;

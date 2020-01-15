@@ -4,7 +4,7 @@
 #include "motioncontroller.h"
 #include "missions.h"
 
-#define ROBOTPORT  24902 //8000 ////
+#define ROBOTPORT  8000 //24902 //8000 ////
 #define DEBUG 0
 
 
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
         }
 
     }
-    if(laser_calib_black==NULL || laser_calib_white==NULL )
+    else
     {
         for(int i = 0; i < 8; i++)
         {
