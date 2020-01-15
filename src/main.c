@@ -213,7 +213,8 @@ int main(int argc, char **argv)
     */
     rhdSync();
 
-    odo.w=0.256;
+    //odo.w=0.256;
+    odo.w=0.256772;
     odo.cr=DELTA_M;
     odo.cl=odo.cr;
     odo.left_enc=lenc->data[0];
