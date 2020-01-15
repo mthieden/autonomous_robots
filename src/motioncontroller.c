@@ -220,14 +220,25 @@ void update_motcon(motiontype *p)
                 p->motorspeed_r=speed;
             }
             else if(odo.theta>mot.GoalTheta)
-            {
-                p->motorspeed_r-= mot.dV;
+            {   
+		if(p->curcmd==mot_follow_line)
+		{
+                p->motorspeed_r-= mot.dV/2;
+		p->motorspeed_l+= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
-            }
+		}  
+		else  p->motorspeed_r-= mot.dV;         
+
+	    }
             else if(odo.theta<mot.GoalTheta)
             {
-                p->motorspeed_l-= mot.dV;
+               	if(p->curcmd==mot_follow_line)
+		{
+                p->motorspeed_r+= mot.dV/2;
+		p->motorspeed_l-= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
+		}  
+		else  p->motorspeed_l-= mot.dV;  
             }
 
       break;
