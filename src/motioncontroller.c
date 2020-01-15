@@ -75,6 +75,7 @@ void update_motcon(motiontype *p)
 {
     double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
     double speed=0;
+    int line_index =-1;
 
     if (p->cmd !=0)
     {
@@ -117,10 +118,10 @@ void update_motcon(motiontype *p)
         else if(p->curcmd==mot_follow_line)
         {
 		update_lin_sens();
-            int line_index = lin_pos_com();
+            line_index = lin_pos_com();
 		//printf("\n   line index : %d", line_index);
             double line_com = 0;
-            double line_k = 0.5;
+            double line_k = 0.05;
             if (line_index <= -1)
             {
                 p->motorspeed_l=0;
@@ -202,7 +203,7 @@ void update_motcon(motiontype *p)
 
        case mot_move:
        case mot_follow_line:
-            if ((p->right_pos+p->left_pos)/2- p->startpos > p->dist)
+            if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(line_index==-1 && p->curcmd==mot_follow_line))
             {
                 p->finished=1;
                 p->motorspeed_l=0;
@@ -223,6 +224,7 @@ void update_motcon(motiontype *p)
                 p->motorspeed_l-= mot.dV;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
             }
+
       break;
 
         case mot_turn:
