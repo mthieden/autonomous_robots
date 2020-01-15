@@ -4,7 +4,8 @@
 #include "motioncontroller.h"
 #include "missions.h"
 
-#define ROBOTPORT  24902 //8000 ////
+#define ROBOTPORT  8000     // on the simulation
+//#define ROBOTPORT  24902  // on the robot
 #define DEBUG 0
 
 
@@ -25,37 +26,48 @@ int main(int argc, char **argv)
 
     /* Establish connection to robot sensors and actuators.
     */
+
+    printf("**********************************************************************\n");
+    printf("*********                  Start of program                  *********\n");
+    printf("**********************************************************************\n\n");
+
+    printf("- Attempting to connect robot ...\n");
     if (rhdConnect('w',"localhost",ROBOTPORT)!='w')
     {
         printf("Can't connect to rhd \n");
         exit(EXIT_FAILURE);
     }
 
-    printf("connected to robot \n");
+    printf("Sucess! connected to robot \n");
+    printf("- Attempting to get input get SymbolTable...\n");
     if ((inputtable=getSymbolTable('r'))== NULL)
     {
         printf("Can't connect to rhd \n");
         exit(EXIT_FAILURE);
     }
+    printf("Success! connected to input SymbolTable \n");
+    printf("- Attempting to get output get SymbolTable...\n");
     if ((outputtable=getSymbolTable('w'))== NULL)
     {
         printf("Can't connect to rhd \n");
         exit(EXIT_FAILURE);
     }
+    printf("Success! connected to output SymbolTable \n\n");
 
     if(argc == 2)
     {
-        int r = asprintf(&path,"calib/smr%s_demo_ls_calib.dat",argv[1]);
+        printf("*******************************************\n");
+        printf("**       Reading calibration data        **\n");
+        printf("*******************************************\n\n");
+        printf("- Reading laser calbration data \n\n");
 
+        int r = asprintf(&path,"calib/smr%s_demo_ls_calib.dat",argv[1]);
         printf("%s:\n", path);
         fp = fopen(path, "r");
         if (fp != NULL || r !=-1)
         {
             while ((read = getline(&line, &len, fp)) != -1) {
-                printf("Retrieved line of length %zu:\n", read);
-                printf("%s", line);
                 int index = line[18] - '0' -1 ;
-
                 if(line[12]=='w')
                 {
                     laser_calib_white[index] = strtod(line, NULL);
@@ -65,36 +77,62 @@ int main(int argc, char **argv)
                     laser_calib_black[index] = strtod(line, NULL);
                 }
             }
-
+            printf("Success! laser calbration data read \n\n");
             fclose(fp);
+        }
+        else
+        {
+            printf("Failed! could not read laser data!\n\n");
+        }
 
-            printf("calibration data read:\n");
-            printf("black : ");
-            for(int i = 0 ; i<8; i++)
-            {
-                printf("%f ",laser_calib_black[i]);
-
-            }
-            printf("\n");
-            printf("white : ");
-            for(int i = 0 ; i<8; i++)
-            {
-                printf("%f ",laser_calib_white[i]);
-
-            }
-            printf("\n");
+        printf("- Reading odemetri calbration data \n\n");
+        r = asprintf(&path,"calib/smr%s_demo_odo_calib.dat",argv[1]);
+        printf("%s:\n", path);
+        fp = fopen(path, "r");
+        if (fp != NULL || r !=-1)
+        {
+            read = getline(&line, &len, fp);
+            printf("%s\n",line);
+            double l = strtof(line, NULL);
+            double l1 = strtof(line, NULL);
+            double l2 = strtof(line, NULL);
+            printf("lol %f %f %f\n",l,l1,l2);
+            printf("Success! odemetri calbration data read \n\n");
+            fclose(fp);
+        }
+        else
+        {
+            printf("Failed! could not read odemetri data!\n\n");
         }
 
     }
-    if(laser_calib_black==NULL || laser_calib_white==NULL )
+    else
     {
+        printf("*******************************************\n");
+        printf("**       Creating calibration data\n\n");
+
         for(int i = 0; i < 8; i++)
         {
-            laser_calib_black[i] = 1;
-            laser_calib_white[i] = 1;
+            laser_calib_black[i] = 0;
+            laser_calib_white[i] = 128;
         }
-        printf("No calibration data read:\n");
     }
+    printf("Current calibration data:\n");
+    printf("black : ");
+    for(int i = 0 ; i<8; i++)
+    {
+        printf("%f ",laser_calib_black[i]);
+
+    }
+    printf("\n");
+    printf("white : ");
+    for(int i = 0 ; i<8; i++)
+    {
+        printf("%f ",laser_calib_white[i]);
+
+    }
+    printf("\n");
+
 
 
     // set up logging
@@ -214,13 +252,13 @@ int main(int argc, char **argv)
     rhdSync();
 
     odo.w=0.256;
+    mot.w=odo.w;
     odo.cr=DELTA_M;
     odo.cl=odo.cr;
     odo.left_enc=lenc->data[0];
     odo.right_enc=renc->data[0];
     reset_odo(&odo);
     printf("position: %f, %f\n", odo.left_pos, odo.right_pos);
-    mot.w=odo.w;
     running=1;
     mission.state=ms_init;
     mission.oldstate=-1;
