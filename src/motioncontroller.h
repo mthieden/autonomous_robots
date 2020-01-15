@@ -131,6 +131,7 @@ void xml_proca(struct xml_in *x);
 void reset_odo(odotype *p);
 void update_odo(odotype *p);
 void update_lin_sens(void);
+int line_cross(void);
 
 void update_motcon(motiontype *p);
 int fwd(double dist, double speed,int time);
