@@ -121,7 +121,7 @@ void update_motcon(motiontype *p)
             line_index = lin_pos_com();
 		//printf("\n   line index : %d", line_index);
             double line_com = 0;
-            double line_k = 0.1l5;
+            double line_k = 0.15;
             if (line_index == -1)
             {
                 p->motorspeed_l=0;
