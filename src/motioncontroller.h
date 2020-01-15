@@ -32,7 +32,6 @@
 #define WHEEL_DIAMETER   0.06522	/* m */
 #define WHEEL_SEPARATION 0.26	/* m */
 #define DELTA_M (M_PI * WHEEL_DIAMETER / 2000)
-#define ROBOTPORT	24902 // 8000 //24902//
 #define SAMPLERATE	100
 
 struct
@@ -47,11 +46,6 @@ typedef struct
     double left, right;
 } logtype;
 
-/*typedef struct
-{
-    int time;
-    double x, y, theta;
-} logodotype;*/
 
 typedef struct
 {

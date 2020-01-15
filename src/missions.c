@@ -2,7 +2,7 @@
 
 int mission_square()
 {
-    double dist=1;
+    double dist=3;
     double angle=90.0/180*M_PI;
     switch (mission.state)
     {
