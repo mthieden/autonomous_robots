@@ -289,6 +289,29 @@ int fwd(double dist, double speed,int time)
         return mot.finished;
 }
 
+int fwd_laser_left(double dist_laser, int laser_index ,double speed,int time)
+{
+    if (time==0)
+    {   
+	if (dist_laser>0) {
+		laserpar[0]>dist_laser
+		mot.cmd=mot_move;
+        	mot.speedcmd=speed;
+        	return 0;	
+	}
+	    
+	else{
+		laserpar[0]<dist_laser
+		mot.cmd=mot_move;
+        	mot.speedcmd=speed;
+        	return 0;	
+	}
+
+    }
+    else
+        return mot.finished;
+}
+
 int follow_line(double dist, double speed,int time)
 {
     if (time==0)
