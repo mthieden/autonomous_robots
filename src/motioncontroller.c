@@ -77,7 +77,7 @@ void update_motcon(motiontype *p)
     double speed=0;
     odo.index=3.5;
     update_lin_sens();    
-    line_cross();    
+    line_cross(mission.time);    
 
     if (p->cmd !=0)
     {
@@ -226,7 +226,7 @@ void update_motcon(motiontype *p)
 		if(p->curcmd==mot_follow_line)
 		{
                 p->motorspeed_r-= mot.dV/2;
-		p->motorspeed_l+= mot.dV/2;
+		//p->motorspeed_l+= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
 		}  
 		else  p->motorspeed_r-= mot.dV;         
@@ -236,7 +236,7 @@ void update_motcon(motiontype *p)
             {
                	if(p->curcmd==mot_follow_line)
 		{
-                p->motorspeed_r+= mot.dV/2;
+                //p->motorspeed_r+= mot.dV/2;
 		p->motorspeed_l-= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
 		}  
@@ -375,20 +375,23 @@ void update_lin_sens(void)
     }
 }
 
-int line_cross(void)
+int line_cross(int time)
 {
+    if(!time==0){
     int line_trigger = 0;
     for(int i=0; i<8; i++)
     {
     	line_trigger+=LS_calib[i];
     }
-	if(line_trigger>=6){
+	if(line_trigger<=2){
 		printf("Line detected %d \n", line_trigger);
 		return 1;  //Returns 1 if 4 or more linesensors give a HIGH signal
 	}
 	else{
 		return 0; //Returns 0 if not
 	}
+    }
+    return 0;
 }
 
 int lin_pos()

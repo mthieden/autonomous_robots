@@ -36,26 +36,27 @@ int mission_square()
 
 int mission_follow_line()
 {
-    double angle = angle=5.0/180*M_PI;
+    double angle=5.0/180*M_PI;
     switch (mission.state)
     {
 
         case ms_init:
             n=1;
-            mission.state= ms_follow;
+            mission.state= ms_fwd;
             break;
 
         case ms_fwd:
-
-            if (fwd(0.5,0.3,mission.time))  mission.state=ms_follow;
+	    
+            if (fwd(10,0.3,mission.time) || (laserpar[4]<1 && mission.time!=0))   {
+	    mission.state=ms_follow;
+	    printf (  "laser \n ");
+		}
             break;
 
         case ms_follow:
-            if (follow_line(4,0.3,mission.time,'b'))  {
-                printf (  "follow \n ");
+		turn(angle,0.3,mission.time);
                 mission.state=ms_end;
-            }
-            break;
+		printf (  "follow \n ");
 
         case ms_end:
             mot.cmd=mot_stop;
