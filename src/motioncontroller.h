@@ -89,9 +89,9 @@ typedef struct
 }motiontype;
 
 // Motion types
-enum {mot_stop=1,mot_move,mot_turn,mot_follow_line};
+enum {mot_stop=1,mot_move,mot_turn,mot_follow_line,mot_follow_line_angle};
 // mission types
-enum {ms_init,ms_fwd,ms_turn,ms_end,ms_follow};
+enum {ms_init,ms_fwd,ms_turn,ms_end,ms_follow,ms_laser};
 
 
 // Global varaibles
@@ -129,6 +129,7 @@ void update_ir(void);
 void update_motcon(motiontype *p);
 int fwd(double dist, double speed,int time);
 int follow_line(double dist, double speed,int time, char colour);
+int follow_line_angle(double angle, double dist, double speed, int time, char colour);
 int turn(double angle, double speed,int time);
 int lin_pos();
 double lin_pos_com();

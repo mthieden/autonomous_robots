@@ -51,7 +51,7 @@ int mission_follow_line()
             break;
 
         case ms_follow:
-            if (follow_line(4,0.3,mission.time,'b'))  {
+            if (follow_line(5,0.3,mission.time,'b'))  {
                 printf (  "follow \n ");
                 mission.state=ms_end;
             }
@@ -97,6 +97,43 @@ int mission_fwd_turn()
                 mission.state=ms_end;
             }
             break;
+
+        case ms_end:
+            mot.cmd=mot_stop;
+            return 1;
+    }
+    return 0;
+}
+
+int mission_laser()
+{
+	double initialx=odo.x;
+	double initialtheta=odo.theta;
+	double angle=initialtheta-90*M_PI/180;
+   	double objectdist=0;
+   	double dist = 5;
+
+    switch (mission.state)
+    {
+
+        case ms_init:
+        	n=1;
+            mission.state= ms_laser;
+            break;
+
+        case ms_laser:
+            if (follow_line_angle(angle,dist,0.3,mission.time,'b')){
+	            for(int i=1;i<=8;i++){
+					if(laserpar[i]>laserpar[i-1])
+					{
+						objectdist=laserpar[i];
+					}
+				}
+				double goaldist=objectdist+(odo.x-initialx);
+				printf("\nDistance to object: %f\n",goaldist);
+	            mission.state=ms_end;
+            }
+        	break;
 
         case ms_end:
             mot.cmd=mot_stop;
