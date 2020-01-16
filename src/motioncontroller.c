@@ -420,3 +420,12 @@ double lin_pos_com()
     //printf("\n sum: %f, weighted sum: %f, index: %f", sum, weight_sum, index);
     return index;
 }
+
+void update_ir(void){
+	double ka[5] = {15.8158,15.8158,15.8158,15.8158,15.8158};
+	double kb[5] = {74.6716,74.6716,74.6716,74.6716,74.6716};
+	for(int i=0;i<5;i++){
+		double irsensordata=irsensor->data[i];
+		irdist[i]=ka[i]/(irsensordata-kb[i]);
+	}
+}
