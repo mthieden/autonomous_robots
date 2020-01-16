@@ -1,5 +1,6 @@
 #include "motioncontroller.h"
 int n;
+double initial_y;
 
 int mission_square();
 int mission_fwd_turn();
