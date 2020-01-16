@@ -76,9 +76,7 @@ void update_motcon(motiontype *p)
     double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
     double speed=0;
     odo.index=3.5;
-    update_lin_sens();    
-    line_cross();    
-
+    update_lin_sens();
     if (p->cmd !=0)
     {
         p->finished=0;
@@ -123,7 +121,6 @@ void update_motcon(motiontype *p)
 		      update_lin_sens();
               odo.index = lin_pos_com();
               mot.K = 3; //0.05
-		//printf("\n   line index : %d", line_index);
             double line_com = 0;
             double line_k = -0.076/100;//0.01;
             if (odo.index == -1)
@@ -141,19 +138,8 @@ void update_motcon(motiontype *p)
 	        mot.GoalTheta -= line_k * line_com;
             mot.domega = fabs(mot.K*(mot.GoalTheta - odo.theta));
 
-/*
-            mot.domega = mot.K*(mot.GoalTheta - odo.theta - line_k * line_com);
-            mot.GoalTheta -= mot.domega;
-*/
             mot.dV = fabs(mot.domega*(odo.w/2));
-            //printf("domega %f, dV %f  line_index : %d, line_com :%f",mot.domega, mot.dV, line_index, line_com);
         }
-/*
-        printf("\n acceldist : %f",acceldist);
-        printf("   accel : %f",accel);
-        printf("   speed_L : %f",p->motorspeed_l);
-        printf("   speed_R : %f",p->motorspeed_r);
-*/
         if(acceldist > p->motorspeed_l && !(p->motorspeed_l > (p->speedcmd)))
         {
           if( p->motorspeed_l + hyst >= p->speedcmd ||p->motorspeed_l - hyst >= p->speedcmd)
@@ -222,14 +208,14 @@ void update_motcon(motiontype *p)
                 p->motorspeed_r=speed;
             }
             else if(odo.theta>mot.GoalTheta)
-            {   
+            {
 		if(p->curcmd==mot_follow_line)
 		{
                 p->motorspeed_r-= mot.dV/2;
 		p->motorspeed_l+= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
-		}  
-		else  p->motorspeed_r-= mot.dV;         
+		}
+		else  p->motorspeed_r-= mot.dV;
 
 	    }
             else if(odo.theta<mot.GoalTheta)
@@ -239,8 +225,8 @@ void update_motcon(motiontype *p)
                 p->motorspeed_r+= mot.dV/2;
 		p->motorspeed_l-= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
-		}  
-		else  p->motorspeed_l-= mot.dV;  
+		}
+		else  p->motorspeed_l-= mot.dV;
             }
 
       break;
@@ -362,7 +348,7 @@ void update_lin_sens(void)
     {
         for(int i=0; i<8; i++)
         {
-            LS_calib[i]=1-((linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]));        
+            LS_calib[i]=1-((linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]));
         }
     }
 
@@ -383,7 +369,6 @@ int line_cross(void)
     	line_trigger+=LS_calib[i];
     }
 	if(line_trigger>=6){
-		printf("Line detected %d \n", line_trigger);
 		return 1;  //Returns 1 if 4 or more linesensors give a HIGH signal
 	}
 	else{
