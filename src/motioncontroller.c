@@ -217,7 +217,6 @@ void update_motcon(motiontype *p)
        case mot_follow_line:
             if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(odo.index==-1 && p->curcmd==mot_follow_line)||(p->curcmd==mot_follow_line_angle && fabs(p->angle-odo.theta)<=1*M_PI/180))//
             {
-                printf("goal angle: %f, odotheta: %f, curcmd: %d",p->angle,odo.theta,p->curcmd);
                 p->finished=1;
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;

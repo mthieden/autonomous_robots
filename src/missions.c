@@ -119,7 +119,6 @@ int mission_laser()
         case ms_init:
         	n=1;
             mission.state= ms_laser;
-            printf("\nFollowing line until goal angle is reached\n");
             break;
 
         case ms_laser:
