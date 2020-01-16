@@ -251,7 +251,7 @@ int main(int argc, char **argv)
          */
         sm_update(&mission);
         if(!mission_sq)
-            mission_sq = mission_follow_line();
+            mission_sq = mission_laser();
         else
             running =0;
         /*  end of mission  */
