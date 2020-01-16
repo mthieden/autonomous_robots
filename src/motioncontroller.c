@@ -375,20 +375,23 @@ void update_lin_sens(void)
     }
 }
 
-int line_cross(void)
+int line_cross(int time)
 {
+    if(!time==0){
     int line_trigger = 0;
     for(int i=0; i<8; i++)
     {
     	line_trigger+=LS_calib[i];
     }
-	if(line_trigger>=6){
+	if(line_trigger<=2){
 		printf("Line detected %d \n", line_trigger);
 		return 1;  //Returns 1 if 4 or more linesensors give a HIGH signal
 	}
 	else{
 		return 0; //Returns 0 if not
 	}
+    }
+    return 0;
 }
 
 int lin_pos()
