@@ -106,8 +106,7 @@ int mission_fwd_turn()
 }
 
 int mission_laser()
-{
-	double initialx=odo.x;
+{	
 	double initialtheta=odo.theta;
 	double angle=initialtheta-90*M_PI/180;
    	double objectdist=0;
@@ -117,19 +116,20 @@ int mission_laser()
     {
 
         case ms_init:
-        	n=1;
-            mission.state= ms_laser;
+        	printf("initlized initial y");
+        	initial_y=odo.y;
+        	mission.state= ms_laser;
             break;
 
         case ms_laser:
             if (follow_line_angle(angle,dist,0.3,mission.time,'b')){
 	            for(int i=1;i<=8;i++){
-					if(laserpar[i]>laserpar[i-1])
+					if(laserpar[i]<laserpar[i-1])
 					{
-						objectdist=laserpar[i];
+						objectdist=laserpar[i]+0.235;
 					}
 				}
-				double goaldist=objectdist+(odo.x-initialx);
+				double goaldist=objectdist+(fabs(odo.y));
 				printf("\nDistance to object: %f\n",goaldist);
 	            mission.state=ms_end;
             }
