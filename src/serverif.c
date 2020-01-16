@@ -36,7 +36,7 @@ void serverconnect(componentservertype *s){
     }
   }
   else{
-      printf("Not connected to %s  %d \n",s->name,s->connected);   
+      printf("Not connected to %s  %d \n",s->name,s->connected);
   }
 }
 
@@ -124,9 +124,9 @@ void xml_proca(struct xml_in *x){
 	 if (ix >-1 && ix < 10)
 	   laserpar[ix]=atof(x->attr[i].value);
        }
-       
+
      }
-   
+
     break;
     case XML_IN_TAG_END:
       //printf("end tag: %s\n", x->a);
@@ -137,5 +137,5 @@ void xml_proca(struct xml_in *x){
       //printf("\"\n");
       break;
     }
-  } 
-}   
+  }
+}

@@ -103,6 +103,8 @@ double laserpar[10];
 double LS_calib[8];
 double laser_calib_black[8];
 double laser_calib_white[8];
+double ir_calib_15[6];
+double ir_calib_40[6];
 
 // SMR input/output data
 symTableElement *  inputtable,*outputtable;
@@ -111,13 +113,6 @@ symTableElement *lenc,*renc,*linesensor,*irsensor, *speedl,*speedr,*resetmotorr,
 odotype odo;
 smtype mission;
 motiontype mot;
-
-/*
-logtype log_main[10000];
-int log_counter;
-logodotype log_odo[10000];
-int log_odo_counter;
-*/
 
 // Prototypes
 void serverconnect(componentservertype *s);
