@@ -75,9 +75,7 @@ void update_motcon(motiontype *p)
 {
     double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
     double speed=0;
-    odo.index=3.5;
-    update_lin_sens();    
-    line_cross();    
+    odo.index=3.5; 
 
     if (p->cmd !=0)
     {
@@ -375,20 +373,22 @@ void update_lin_sens(void)
     }
 }
 
-int line_cross(void)
+int line_cross(int time)
 {
+    if(!time==0){
     int line_trigger = 0;
     for(int i=0; i<8; i++)
     {
     	line_trigger+=LS_calib[i];
     }
-	if(line_trigger>=6){
-		printf("Line detected %d \n", line_trigger);
+	if(line_trigger<=2){
 		return 1;  //Returns 1 if 4 or more linesensors give a HIGH signal
 	}
 	else{
 		return 0; //Returns 0 if not
 	}
+    }
+    return 0;
 }
 
 int lin_pos()
