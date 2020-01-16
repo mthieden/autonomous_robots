@@ -77,9 +77,7 @@ void update_motcon(motiontype *p)
     double speed=0;
     odo.index=3.5;
     update_lin_sens();    
-    line_cross();
-    
-    
+    line_cross();    
 
     if (p->cmd !=0)
     {
@@ -386,11 +384,9 @@ int line_cross(void)
     }
 	if(line_trigger>=6){
 		printf("Line detected %d \n", line_trigger);
-		line_trigger=0;
 		return 1;  //Returns 1 if 4 or more linesensors give a HIGH signal
 	}
 	else{
-		line_trigger=0;
 		return 0; //Returns 0 if not
 	}
 }
