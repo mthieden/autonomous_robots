@@ -12,8 +12,7 @@
 int main(int argc, char **argv)
 {
     int running,arg,run_time=0;
-    int mission_find=0;
-    int mission_funky=0;
+    int mission_status=0;
     // calibrate variables
     FILE * fp;
     char * line = NULL;
@@ -347,15 +346,22 @@ int main(int argc, char **argv)
          *  mission statemachine
          */
         sm_update(&mission);
-        if(!mission_find)
-            mission_find = mission_find_start_point();
-        else
+
+        switch (mission_status)
         {
-            if(!mission_funky)
-                mission_funky = mission_funky_wall();
-            else
+            case 0:
+                if(mission_find_start_point())
+                    mission_status++:
+                break;
+            case 1:
+                if(mission_funky_wall())
+                    mission_status++:
+                break;
+            default:
                 running =0;
+                break;
         }
+
         /*  end of mission  */
 
         mot.left_pos=odo.left_pos;

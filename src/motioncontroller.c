@@ -60,15 +60,6 @@ void update_odo(odotype *p)
     odo.theta += (dUR - dUL)/WHEEL_SEPARATION;
     odo.x += (U)*cos(odo.theta);
     odo.y += (U)*sin(odo.theta);
-/*
-    //update log
-    log_odo[log_odo_counter].time = mission.time;
-    log_odo[log_odo_counter].x = odo.x;
-    log_odo[log_odo_counter].y = odo.y;
-    log_odo[log_odo_counter].theta = odo.theta;
-    printf("time %d, x : %f, y : %f, theta : %f, speed: %f\n", mission.time, odo.x, odo.y,odo.theta, mot.speedcmd);
-    log_odo_counter++;
-*/
 }
 
 void update_motcon(motiontype *p)
@@ -76,7 +67,7 @@ void update_motcon(motiontype *p)
     double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
     double speed=0;
     odo.index=3.5;
-    update_lin_sens();
+
     if (p->cmd !=0)
     {
         p->finished=0;
@@ -93,6 +84,10 @@ void update_motcon(motiontype *p)
                 p->startpos=(p->left_pos+p->right_pos)/2;
                 p->curcmd=mot_follow_line;
                 break;
+            case mot_follow_line_angle:
+                p->startpos=(p->left_pos+p->right_pos)/2;
+                p->curcmd=mot_follow_line_angle;
+                break;
             case mot_turn:
                 if (p->angle > 0)
                     p->startpos=p->right_pos;
@@ -104,7 +99,7 @@ void update_motcon(motiontype *p)
         p->cmd=0;
     }
 
-    if(p->curcmd == mot_move || p->curcmd == mot_follow_line)
+    if(p->curcmd == mot_move || p->curcmd == mot_follow_line || p->curcmd==mot_follow_line_angle)
     {
         double traveldist = (p->right_pos+p->left_pos)/2 - p->startpos;
         double acceldist=(sqrt(2 * accel*SAMPLERATE * (p->dist - traveldist)));
@@ -116,13 +111,13 @@ void update_motcon(motiontype *p)
             mot.domega = mot.K*(mot.GoalTheta-odo.theta);
             mot.dV = fabs(mot.domega*(odo.w/2));
         }
-        else if(p->curcmd==mot_follow_line)
+        else if((p->curcmd==mot_follow_line)||(p->curcmd==mot_follow_line_angle))
         {
-		      update_lin_sens();
-              odo.index = lin_pos_com();
-              mot.K = 3; //0.05
+		    update_lin_sens();
+            odo.index = lin_pos_com();
+            mot.K = 15; //0.05
             double line_com = 0;
-            double line_k = -0.076/100;//0.01;
+            double line_k = -0.076/25;//0.01;
             if (odo.index == -1)
             {
                 p->motorspeed_l=0;
@@ -194,9 +189,10 @@ void update_motcon(motiontype *p)
             p->motorspeed_r=0;
             break;
 
+       case mot_follow_line_angle:
        case mot_move:
        case mot_follow_line:
-            if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(odo.index==-1 && p->curcmd==mot_follow_line))
+            if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(odo.index==-1 && p->curcmd==mot_follow_line)||(p->curcmd==mot_follow_line_angle && fabs(p->angle-odo.theta)<=1*M_PI/180))//
             {
                 p->finished=1;
                 p->motorspeed_l=0;
@@ -209,10 +205,10 @@ void update_motcon(motiontype *p)
             }
             else if(odo.theta>mot.GoalTheta)
             {
-		if(p->curcmd==mot_follow_line)
+		if((p->curcmd==mot_follow_line)||(p->curcmd==mot_follow_line_angle))
 		{
                 p->motorspeed_r-= mot.dV/2;
-		p->motorspeed_l+= mot.dV/2;
+		        //p->motorspeed_l+= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
 		}
 		else  p->motorspeed_r-= mot.dV;
@@ -220,7 +216,7 @@ void update_motcon(motiontype *p)
 	    }
             else if(odo.theta<mot.GoalTheta)
             {
-               	if(p->curcmd==mot_follow_line)
+               	if((p->curcmd==mot_follow_line)||(p->curcmd==mot_follow_line_angle))
 		{
                 p->motorspeed_r+= mot.dV/2;
 		p->motorspeed_l-= mot.dV/2;
@@ -265,17 +261,6 @@ void update_motcon(motiontype *p)
             }
             break;
     }
-/*
-    double travel = (p->right_pos+p->left_pos)/2- p->startpos;
-    double curr = (p->right_pos+p->left_pos);
-    double dist = p->dist;
-    printf("time %d, travel %f, curr : %f, dist : %f", mission.time, travel, curr, dist);
-    printf(" left : %f, right : %f\n", mot.motorspeed_l, mot.motorspeed_r);
-    log_main[log_counter].time = mission.time;
-    log_main[log_counter].left = mot.motorspeed_l;
-    log_main[log_counter].right = mot.motorspeed_r;
-    log_counter++;
-*/
 }
 
 
@@ -304,6 +289,25 @@ int follow_line(double dist, double speed,int time, char colour)
         mot.cmd=mot_follow_line;
         mot.speedcmd=speed;
         mot.dist=dist;
+        return 0;
+    }
+    else
+        return mot.finished;
+}
+
+int follow_line_angle(double angle, double dist, double speed,int time, char colour)
+{
+
+    if(colour!='w' && colour !='b')
+    //if(strcmp('w','w')!=0)
+        {return -1;}
+    else if (time==0)
+    {
+        mot.fl_colour=colour;
+        mot.cmd=mot_follow_line_angle;
+        mot.speedcmd=speed;
+        mot.dist=dist;
+        mot.angle=angle;
         return 0;
     }
     else
@@ -361,8 +365,9 @@ void update_lin_sens(void)
     }
 }
 
-int line_cross(void)
+int line_cross(int time)
 {
+    if(!time==0){
     int line_trigger = 0;
     for(int i=0; i<8; i++)
     {
@@ -374,6 +379,8 @@ int line_cross(void)
 	else{
 		return 0; //Returns 0 if not
 	}
+    }
+    return 0;
 }
 
 int lin_pos()
