@@ -77,7 +77,7 @@ void update_motcon(motiontype *p)
     double speed=0;
     odo.index=3.5;
     update_lin_sens();    
-    line_cross();    
+    line_cross(mission.time);    
 
     if (p->cmd !=0)
     {
