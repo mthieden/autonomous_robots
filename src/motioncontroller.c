@@ -75,6 +75,9 @@ void update_motcon(motiontype *p)
 {
     double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
     double speed=0;
+    odo.index=3.5;
+    update_lin_sens();    
+    line_cross();    
 
     if (p->cmd !=0)
     {
@@ -108,36 +111,41 @@ void update_motcon(motiontype *p)
         double traveldist = (p->right_pos+p->left_pos)/2 - p->startpos;
         double acceldist=(sqrt(2 * accel*SAMPLERATE * (p->dist - traveldist)));
         double hyst = accel;
-    	mot.K = 0.0002;
+
         if(p->curcmd==mot_move)
         {
+            mot.K = 0.003;
             mot.domega = mot.K*(mot.GoalTheta-odo.theta);
-            mot.dV = fabs(mot.domega/(odo.w/2));
+            mot.dV = fabs(mot.domega*(odo.w/2));
         }
         else if(p->curcmd==mot_follow_line)
         {
-		update_lin_sens();
-            int line_index = lin_pos_com();
+		      update_lin_sens();
+              odo.index = lin_pos_com();
+              mot.K = 3; //0.05
 		//printf("\n   line index : %d", line_index);
             double line_com = 0;
-            double line_k = 0.5;
-            if (line_index <= -1)
+            double line_k = -0.076/100;//0.01;
+            if (odo.index == -1)
             {
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
                 p->finished=1;
             }
-            else if (line_index <= 3)
+            else if (odo.index >= 3.8 ||odo.index<=3.2)
             {
-                 line_com = line_index - 3;
+                 line_com = odo.index - 3.5;
             }
-            else if(line_index >= 4)
-            {
-                 line_com = line_index - 4;
-            }
+
+
+	        mot.GoalTheta -= line_k * line_com;
+            mot.domega = fabs(mot.K*(mot.GoalTheta - odo.theta));
+
+/*
             mot.domega = mot.K*(mot.GoalTheta - odo.theta - line_k * line_com);
-	    mot.GoalTheta -= mot.domega;
-            mot.dV = mot.domega/(odo.w/2);
+            mot.GoalTheta -= mot.domega;
+*/
+            mot.dV = fabs(mot.domega*(odo.w/2));
             //printf("domega %f, dV %f  line_index : %d, line_com :%f",mot.domega, mot.dV, line_index, line_com);
         }
 /*
@@ -202,27 +210,39 @@ void update_motcon(motiontype *p)
 
        case mot_move:
        case mot_follow_line:
-            if ((p->right_pos+p->left_pos)/2- p->startpos > p->dist)
+            if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(odo.index==-1 && p->curcmd==mot_follow_line))
             {
                 p->finished=1;
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
             }
-            else if(fabs(mot.GoalTheta-odo.theta)<(1*M_PI)/180)
+            else if(fabs(mot.GoalTheta-odo.theta)<(5*M_PI)/180)
             {
                 p->motorspeed_l=speed;
                 p->motorspeed_r=speed;
             }
             else if(odo.theta>mot.GoalTheta)
-            {
-                p->motorspeed_r-= mot.dV;
+            {   
+		if(p->curcmd==mot_follow_line)
+		{
+                p->motorspeed_r-= mot.dV/2;
+		p->motorspeed_l+= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
-            }
+		}  
+		else  p->motorspeed_r-= mot.dV;         
+
+	    }
             else if(odo.theta<mot.GoalTheta)
             {
-                p->motorspeed_l-= mot.dV;
+               	if(p->curcmd==mot_follow_line)
+		{
+                p->motorspeed_r+= mot.dV/2;
+		p->motorspeed_l-= mot.dV/2;
                 //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
+		}  
+		else  p->motorspeed_l-= mot.dV;  
             }
+
       break;
 
         case mot_turn:
@@ -286,10 +306,15 @@ int fwd(double dist, double speed,int time)
         return mot.finished;
 }
 
-int follow_line(double dist, double speed,int time)
+int follow_line(double dist, double speed,int time, char colour)
 {
-    if (time==0)
+
+    if(colour!='w' && colour !='b')
+    //if(strcmp('w','w')!=0)
+        {return -1;}
+    else if (time==0)
     {
+        mot.fl_colour=colour;
         mot.cmd=mot_follow_line;
         mot.speedcmd=speed;
         mot.dist=dist;
@@ -331,38 +356,65 @@ void sm_update(smtype *p)
 
 void update_lin_sens(void)
 {
-    int LA=0; 	//Low average
-    int HA=128; 	//High average
-    for(int i=0; i<8; i++)
+    //laser_calib_black; 	//Low average
+    //laser_calib_white; 	//High average
+    if (mot.fl_colour=='b')
     {
-        LS_calib[i]=(linesensor->data[i]-LA)/(HA-LA);
+        for(int i=0; i<8; i++)
+        {
+            LS_calib[i]=1-((linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]));        
+        }
+    }
+
+    else
+    {
+    for(int i=0; i<8; i++)
+        {
+            LS_calib[i]=(linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]);
+        }
     }
 }
 
-int lin_pos(void)
+int line_cross(void)
 {
-	int index=-1;
-	double max=0.9;
-	for (int i=0; i<8; i++)
-	{
-		if(LS_calib[i]<max)
-			{
-		        max=LS_calib[i];
-                index=i;
-			}
+    int line_trigger = 0;
+    for(int i=0; i<8; i++)
+    {
+    	line_trigger+=LS_calib[i];
+    }
+	if(line_trigger>=6){
+		printf("Line detected %d \n", line_trigger);
+		return 1;  //Returns 1 if 4 or more linesensors give a HIGH signal
 	}
+	else{
+		return 0; //Returns 0 if not
+	}
+}
+
+int lin_pos()
+{
+    int index=-1;
+    double max=0.9;
+    for (int i=0; i<8; i++)
+    {
+    	if(LS_calib[i]<max)
+			{
+   		        max=LS_calib[i];
+                index=i;
+   			}
+    }
 	return index;
 }
 
-int lin_pos_com(void)
+double lin_pos_com()
 {
     double index=-1;
     double sum=0;
     double weight_sum=0;
     for (int i=0; i<8; i++)
     {
-        sum+=1-LS_calib[i];
-        weight_sum+=(i+1)*(1-LS_calib[i]);
+        sum+=LS_calib[i];
+        weight_sum+=(i+1)*(LS_calib[i]);
     }
     index = (weight_sum/sum)-1;
     //printf("\n sum: %f, weighted sum: %f, index: %f", sum, weight_sum, index);

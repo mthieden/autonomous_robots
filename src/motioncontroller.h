@@ -64,6 +64,7 @@ typedef struct{ //input signals
 		int left_enc_old, right_enc_old;
 		int time;
 		double x, y, theta;
+        double index;
 		} odotype;
 /*
  * Motion control struct
@@ -78,6 +79,7 @@ typedef struct
     double angle;
     double GoalTheta;
     double left_pos,right_pos;
+    char fl_colour; //Colour of follow line
     // parameters
     double w;
     //output
@@ -124,13 +126,14 @@ void xml_proca(struct xml_in *x);
 void reset_odo(odotype *p);
 void update_odo(odotype *p);
 void update_lin_sens(void);
+int line_cross(void);
 
 void update_motcon(motiontype *p);
 int fwd(double dist, double speed,int time);
-int follow_line(double dist, double speed,int time);
+int follow_line(double dist, double speed,int time, char colour);
 int turn(double angle, double speed,int time);
-int lin_pos(void);
-int lin_pos_com(void);
+int lin_pos();
+double lin_pos_com();
 void sm_update(smtype *p);
 
 symTableElement* getinputref(const char *sym_name, symTableElement * tab);
