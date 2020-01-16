@@ -351,11 +351,11 @@ int main(int argc, char **argv)
         {
             case 0:
                 if(mission_find_start_point())
-                    mission_status++:
+                    mission_status++;
                 break;
             case 1:
                 if(mission_funky_wall())
-                    mission_status++:
+                    mission_status++;
                 break;
             default:
                 running =0;
