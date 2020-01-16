@@ -405,7 +405,7 @@ int line_cross(int time)
     {
     	line_trigger+=LS_calib[i];
     }
-	if(line_trigger<=2){
+	if(line_trigger>=6){
 		return 1;  //Returns 1 if 4 or more linesensors give a HIGH signal
 	}
 	else{
