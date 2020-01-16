@@ -116,13 +116,6 @@ odotype odo;
 smtype mission;
 motiontype mot;
 
-/*
-logtype log_main[10000];
-int log_counter;
-logodotype log_odo[10000];
-int log_odo_counter;
-*/
-
 // Prototypes
 void serverconnect(componentservertype *s);
 void xml_proc(struct xml_in *x);

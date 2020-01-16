@@ -213,14 +213,6 @@ int main(int argc, char **argv)
     }
     printf("Logfile name: %s\n\n", log_file_path);
 
-    fp = fopen(log_file_path, "w");
-    if (fp != NULL )
-    {
-        fprintf(fp ,"%14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s\n",
-                "time", "x", "y", "theta", "goal_theta", "motorspeed_l", "motorspeed_r", "speedcmd",
-                "mission_state", "motiontype", "linesensor0", "linesensor1", "linesensor2", "linesensor3",
-                "linesensor4", "linesensor5", "linesensor6", "linesensor7" );
-    }
 
 
 
@@ -294,10 +286,26 @@ int main(int argc, char **argv)
         {
             xmllaser=xml_in_init(4096,32);
             printf(" laserserver xml initialized \n");
-            len=sprintf(buf,"push  t=0.2 cmd='mrcobst width=0.4'\n");
+            //len=sprintf(buf,"push  t=0.2 cmd='mrcobst width=0.4'\n");
+            len=sprintf(buf,"scanpush cmd='zoneobst'\n");
             send(lmssrv.sockfd,buf,len,0);
         }
 
+    }
+
+    fp = fopen(log_file_path, "w");
+    if (fp != NULL )
+    {
+        fprintf(fp ,"%14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s",
+                "time", "x", "y", "theta", "goal_theta", "motorspeed_l", "motorspeed_r", "speedcmd",
+                "mission_state", "motiontype", "linesensor0", "linesensor1", "linesensor2", "linesensor3",
+                "linesensor4", "linesensor5", "linesensor6", "linesensor7" );
+        if (lmssrv.config && lmssrv.status && lmssrv.connected)
+        {
+            fprintf(fp ,"%14s %14s %14s %14s %14s %14s %14s %14s %14s %14s", "laserscan0", "laserscan1", "laserscan2",
+                    "laserscan3", "laserscan4", "laserscan5", "laserscan6", "laserscan7", "laserscan8", "laserscan9");
+        }
+        fprintf(fp ,"\n");
     }
 
 
@@ -356,6 +364,12 @@ int main(int argc, char **argv)
                 mission.time, odo.x, odo.y, odo.theta, mot.GoalTheta, mot.motorspeed_l, mot.motorspeed_r, mot.speedcmd,
                 mission.state, mot.curcmd, LS_calib[0], LS_calib[1], LS_calib[2], LS_calib[3], LS_calib[4], LS_calib[5],
                 LS_calib[6], LS_calib[7] );
+        if (lmssrv.config && lmssrv.status && lmssrv.connected)
+        {
+            fprintf(fp ,"%14f %14f %14f %14f %14f %14f %14f %14f %14f %14f", laserpar[0],laserpar[1],laserpar[2],
+                    laserpar[3],laserpar[4],laserpar[5],laserpar[6],laserpar[7],laserpar[8],laserpar[9]);
+        }
+        fprintf(fp ,"\n");
         if (DEBUG)
         {
             printf("time %05d, x : %f, y : %f, theta : %f, "\
@@ -375,9 +389,11 @@ int main(int argc, char **argv)
         speedl->updated=1;
         speedr->data[0]=100*mot.motorspeed_r;
         speedr->updated=1;
-        if (run_time  % 100 ==0)
-            //    printf(" laser %f \n",laserpar[3]);
-            run_time++;
+        /*
+        if (run_time  % 100 ==1)
+            printf(" laser : %f %f %f %f %f %f %f %f %f %f\n",laserpar[0],laserpar[1],laserpar[2],laserpar[3],laserpar[4],laserpar[5],laserpar[6],laserpar[7],laserpar[8],laserpar[9]);
+        run_time++;
+        */
         /* stop if keyboard is activated
          *
          */
