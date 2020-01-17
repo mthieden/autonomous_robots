@@ -1,7 +1,3 @@
-/*
- * An example SMR program.
- *
- */
 #ifndef MOTIONCONTROLL   /* Include guard */
 #define MOTIONCONTROLL
 
@@ -89,13 +85,14 @@ typedef struct
     double K;
     double domega;
     double dV;
+    double walldist;
     char fl_colour[3]; //Colour of follow line
 }motiontype;
 
 // Motion types
-enum {mot_stop=1,mot_move,mot_turn,mot_follow_line};
+enum {mot_stop=1,mot_move,mot_turn,mot_follow_line,mot_follow_line_angle,mot_follow_wall};
 // mission types
-enum {ms_init,ms_fwd,ms_turn,ms_end,ms_follow};
+enum {ms_init,ms_fwd,ms_turn,ms_end,ms_follow,ms_laser,ms_follow_wall};
 
 
 // Global varaibles
@@ -107,6 +104,9 @@ double laserpar[10];
 double LS_calib[8];
 double laser_calib_black[8];
 double laser_calib_white[8];
+double ir_calib_15[6];
+double ir_calib_40[6];
+double irdist[6];
 
 // SMR input/output data
 symTableElement *  inputtable,*outputtable;
@@ -115,13 +115,6 @@ symTableElement *lenc,*renc,*linesensor,*irsensor, *speedl,*speedr,*resetmotorr,
 odotype odo;
 smtype mission;
 motiontype mot;
-
-/*
-logtype log_main[10000];
-int log_counter;
-logodotype log_odo[10000];
-int log_odo_counter;
-*/
 
 // Prototypes
 void serverconnect(componentservertype *s);
@@ -132,10 +125,13 @@ void reset_odo(odotype *p);
 void update_odo(odotype *p);
 void update_lin_sens(void);
 int line_cross(void);
+void update_ir(void);
 
 void update_motcon(motiontype *p);
 int fwd(double dist, double speed,int time);
 int follow_line(double dist, double speed,int time, char colour[]);
+int follow_line_angle(double angle, double dist, double speed, int time, char colour[]);
+int follow_wall(double walldist, double dist, double speed, int time);
 int turn(double angle, double speed,int time);
 int lin_pos();
 double lin_pos_com();

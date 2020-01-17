@@ -60,15 +60,6 @@ void update_odo(odotype *p)
     odo.theta += (dUR - dUL)/WHEEL_SEPARATION;
     odo.x += (U)*cos(odo.theta);
     odo.y += (U)*sin(odo.theta);
-/*
-    //update log
-    log_odo[log_odo_counter].time = mission.time;
-    log_odo[log_odo_counter].x = odo.x;
-    log_odo[log_odo_counter].y = odo.y;
-    log_odo[log_odo_counter].theta = odo.theta;
-    printf("time %d, x : %f, y : %f, theta : %f, speed: %f\n", mission.time, odo.x, odo.y,odo.theta, mot.speedcmd);
-    log_odo_counter++;
-*/
 }
 
 void update_motcon(motiontype *p)
@@ -145,8 +136,6 @@ void update_motcon(motiontype *p)
 
             mot.domega = line_com*line_com*line_com*line_k;
             mot.dV = mot.domega*(odo.w/2);
-            printf("line_com: %f\n", line_com);
-            //printf("domega %f, dV %f  line_index : %d, line_com :%f",mot.domega, mot.dV, line_index, line_com);
         }
         else if (p->curcmd==mot_follow_wall)
         {
@@ -155,12 +144,6 @@ void update_motcon(motiontype *p)
             mot.dV = fabs(mot.domega*(odo.w/2));
 
         }
-/*
-        printf("\n acceldist : %f",acceldist);
-        printf("   accel : %f",accel);
-        printf("   speed_L : %f",p->motorspeed_l);
-        printf("   speed_R : %f",p->motorspeed_r);
-*/
         if(acceldist > p->motorspeed_l && !(p->motorspeed_l > (p->speedcmd)))
         {
           if( p->motorspeed_l + hyst >= p->speedcmd ||p->motorspeed_l - hyst >= p->speedcmd)
@@ -194,7 +177,6 @@ void update_motcon(motiontype *p)
         }
         double acceldist=(sqrt(2 * ((accel*SAMPLERATE)/2 )* (angle_dist - angle_travel)));
         double hyst = accel;
-        //printf("angle_dist : %f, angle_travel : %f  acceldist %f",angle_dist, angle_travel, acceldist);
 
         if(acceldist > fabs(p->motorspeed_l)/2 && !(fabs(p->motorspeed_l) > (p->speedcmd)/2))
         {
@@ -217,7 +199,6 @@ void update_motcon(motiontype *p)
        case mot_follow_wall:
             if((((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(laserpar[0]>=mot.walldist+0.2))&&laserpar[0]!=0)
             {   
-                printf("\nReached end of wall\n");
                 p->finished=1;
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
@@ -254,7 +235,6 @@ void update_motcon(motiontype *p)
             {
                 p->motorspeed_r-= mot.dV/2;
                 p->motorspeed_l+= mot.dV/2;
-                    //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
             }  
             else  p->motorspeed_r-= mot.dV;         
             }
@@ -341,17 +321,6 @@ void update_motcon(motiontype *p)
             }
             break;
     }
-/*
-    double travel = (p->right_pos+p->left_pos)/2- p->startpos;
-    double curr = (p->right_pos+p->left_pos);
-    double dist = p->dist;
-    printf("time %d, travel %f, curr : %f, dist : %f", mission.time, travel, curr, dist);
-    printf(" left : %f, right : %f\n", mot.motorspeed_l, mot.motorspeed_r);
-    log_main[log_counter].time = mission.time;
-    log_main[log_counter].left = mot.motorspeed_l;
-    log_main[log_counter].right = mot.motorspeed_r;
-    log_counter++;
-*/
 }
 
 
@@ -391,7 +360,7 @@ int follow_line(double dist, double speed,int time, char colour[])
         return mot.finished;
 }
 
-int follow_line_angle(double angle, double dist, double speed,int time, char colour)
+int follow_line_angle(double angle, double dist, double speed,int time, char colour[])
 {
 
     char states[6][2] ={"wr", "wm", "wl", "br", "bm", "bl"};
@@ -405,6 +374,7 @@ int follow_line_angle(double angle, double dist, double speed,int time, char col
     }
     else if (time==0)
     {
+
         strcpy(mot.fl_colour,colour);
         mot.cmd=mot_follow_line_angle;
         mot.speedcmd=speed;
@@ -480,7 +450,6 @@ void update_lin_sens(void)
             LS_calib[i]=(linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]);
         }
     }
-    printf("followmode: %s\n", mot.fl_colour);
     
     if (mot.fl_colour[1]=='r')
     {
@@ -512,7 +481,6 @@ int line_cross(void)
     	line_trigger+=LS_calib[i];
     }
 	if(line_trigger>=6){
-		printf("Line detected %d \n", line_trigger);
 		return 1;  //Returns 1 if 4 or more linesensors give a HIGH signal
 	}
 	else{
@@ -547,6 +515,5 @@ double lin_pos_com()
     }
     index = (weight_sum/sum)-1;
 
-    //printf("\n sum: %f, weighted sum: %f, index: %f", sum, weight_sum, index);
     return index;
 }

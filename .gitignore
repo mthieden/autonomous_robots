@@ -5,3 +5,4 @@
 *.o
 log/20*
 bin/main
+sim/*
