@@ -1,6 +1,8 @@
 #include "motioncontroller.h"
 int n;
 double initial_y;
+int lines_crossed;
+int on_line;
 
 int mission_square();
 int mission_fwd_turn();

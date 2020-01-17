@@ -12,7 +12,7 @@
 int main(int argc, char **argv)
 {
     int running,arg=0;
-    int mission_sq=0;
+    int mission_status=0;
     // calibrate variables
     FILE * fp;
     char * line = NULL;
@@ -347,10 +347,26 @@ int main(int argc, char **argv)
          *  mission statemachine
          */
         sm_update(&mission);
-        if(!mission_sq)
-            mission_sq = mission_follow_line();
-        else
-            running =0;
+        switch (mission_status)
+        {
+            case 0:
+                if(mission_laser())
+                {
+                    mission_status++;
+                    mission.state=ms_init;
+                }
+                break;
+            case 1:
+                if(mission_push_box())
+                {
+                    mission_status++;
+                    mission.state=ms_init;
+                }
+                break;
+            default:
+                running =0;
+                break;
+        }
         /*  end of mission  */
 
         mot.left_pos=odo.left_pos;
