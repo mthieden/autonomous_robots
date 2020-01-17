@@ -122,7 +122,7 @@ void update_motcon(motiontype *p)
             //mot.K = 15; //3
 		//printf("\n   line l : %d", line_index);
             double line_com = 0;
-            double line_k = 0.15;//0.076/25;
+            double line_k = 0.05;//0.076/25;
             /*double lmr_corr;
             if(mot.fl_colour[1]=='r'){lmr_corr=0.4;}
             else if(mot.fl_colour[1]=='l'){lmr_corr=-0.4;}
@@ -135,13 +135,14 @@ void update_motcon(motiontype *p)
                 p->motorspeed_r=0;
                 p->finished=1;
             }
-            else if (odo.index >= 3.55 ||odo.index<=3.45)
+            else if (odo.index >= 3.52 ||odo.index<=3.48)
             {
                  line_com = odo.index - 3.5;
             }
 
-            mot.domega = line_com*line_k;
+            mot.domega = line_com*line_com*line_com*line_k;
             mot.dV = mot.domega*(odo.w/2);
+            printf("line_com: %f\n", line_com);
             //printf("domega %f, dV %f  line_index : %d, line_com :%f",mot.domega, mot.dV, line_index, line_com);
         }
 /*
@@ -158,7 +159,7 @@ void update_motcon(motiontype *p)
             }
           else
           {
-              speed = fabs(p->motorspeed_l)+accel;
+              speed = fabs((p->motorspeed_l > p->motorspeed_r) ?p->motorspeed_l +accel: p->motorspeed_r+accel);
           }
         }
         else
@@ -205,7 +206,6 @@ void update_motcon(motiontype *p)
             break;
 
        case mot_move:
-       case mot_follow_line:
             if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(odo.index==-1 && p->curcmd==mot_follow_line))
             {
                 p->finished=1;
@@ -219,25 +219,57 @@ void update_motcon(motiontype *p)
             }
             else if(odo.theta>mot.GoalTheta)
             {   
-		if(p->curcmd==mot_follow_line)
-		{
-                p->motorspeed_r-= mot.dV;///2;
-		        //p->motorspeed_l+= mot.dV/2;
-                //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
-		}  
-		else  p->motorspeed_r-= mot.dV;         
-
-	    }
-            else if(odo.theta<mot.GoalTheta)
+            if(p->curcmd==mot_follow_line)
             {
-               	if(p->curcmd==mot_follow_line)
-		{
-                //p->motorspeed_r+= mot.dV/2;
-		        p->motorspeed_l-= mot.dV;///2;
-                //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
-		}  
-		else  p->motorspeed_l-= mot.dV;  
+                p->motorspeed_r-= mot.dV/2;
+                p->motorspeed_l+= mot.dV/2;
+                    //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
+            }  
+            else  p->motorspeed_r-= mot.dV;         
             }
+
+       case mot_follow_line:
+       //INVERT LINESENSOR IF ACTAUL ROBOT (mot.dV < 0 for first case)
+            if (((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(odo.index==-1 && p->curcmd==mot_follow_line))
+            {
+                p->finished=1;
+                p->motorspeed_l=0;
+                p->motorspeed_r=0;
+            }
+            else if (p->motorspeed_r<=0 && p->motorspeed_l<=0)
+            {
+                p->motorspeed_r=0.05;
+                p->motorspeed_l=0.05;   
+            }
+            else if(mot.dV==0)
+            {
+                p->motorspeed_l=speed;
+                p->motorspeed_r=speed;
+            }
+            else if(mot.dV >0 && p->motorspeed_l>=0) 
+            {
+                if (p->motorspeed_l>speed)
+                    {p->motorspeed_l=speed;}
+                else
+                    p->motorspeed_l-=fabs(mot.dV);
+            }
+            else if(mot.dV <0 && p->motorspeed_r>=0) 
+            {
+                if (p->motorspeed_r>speed)
+                    {p->motorspeed_r=speed;}
+                else
+                    p->motorspeed_r-=fabs(mot.dV);
+            }
+            else if (p->motorspeed_r<0)
+            {
+                p->motorspeed_r=0.05;
+            }
+            else if (p->motorspeed_l<0)
+            {
+                p->motorspeed_l=0.05;
+            }
+
+
 
       break;
 
@@ -433,6 +465,7 @@ double lin_pos_com()
         weight_sum+=(i+1)*(LS_calib[i]);
     }
     index = (weight_sum/sum)-1;
+
     //printf("\n sum: %f, weighted sum: %f, index: %f", sum, weight_sum, index);
     return index;
 }
