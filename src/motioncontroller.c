@@ -97,6 +97,10 @@ void update_motcon(motiontype *p)
                 p->startpos=(p->left_pos+p->right_pos)/2;
                 p->curcmd=mot_follow_line_angle;
                 break;
+            case mot_follow_wall:
+                p->startpos=(p->left_pos+p->right_pos)/2;
+                p->curcmd=mot_follow_wall;
+                break;
             case mot_turn:
                 if (p->angle > 0)
                     p->startpos=p->right_pos;
@@ -108,7 +112,7 @@ void update_motcon(motiontype *p)
         p->cmd=0;
     }
 
-    if(p->curcmd == mot_move || p->curcmd == mot_follow_line || p->curcmd==mot_follow_line_angle)
+    if(p->curcmd == mot_move || p->curcmd == mot_follow_line || p->curcmd==mot_follow_line_angle || p->curcmd==mot_follow_wall)
     {
         double traveldist = (p->right_pos+p->left_pos)/2 - p->startpos;
         double acceldist=(sqrt(2 * accel*SAMPLERATE * (p->dist - traveldist)));
@@ -138,24 +142,18 @@ void update_motcon(motiontype *p)
             {
                  line_com = odo.index - 3.5;
             }
-
-
 	        mot.GoalTheta -= line_k * line_com;
             mot.domega = fabs(mot.K*(mot.GoalTheta - odo.theta));
-
-/*
-            mot.domega = mot.K*(mot.GoalTheta - odo.theta - line_k * line_com);
-            mot.GoalTheta -= mot.domega;
-*/
             mot.dV = fabs(mot.domega*(odo.w/2));
-            //printf("domega %f, dV %f  line_index : %d, line_com :%f",mot.domega, mot.dV, line_index, line_com);
         }
-/*
-        printf("\n acceldist : %f",acceldist);
-        printf("   accel : %f",accel);
-        printf("   speed_L : %f",p->motorspeed_l);
-        printf("   speed_R : %f",p->motorspeed_r);
-*/
+        else if (p->curcmd==mot_follow_wall)
+        {
+            printf("\nmot_follow_wall\n");
+            mot.K=0.05;
+            mot.domega = mot.K*(laserpar[0]-mot.walldist);
+            mot.dV = fabs(mot.domega*(odo.w/2));
+
+        }
         if(acceldist > p->motorspeed_l && !(p->motorspeed_l > (p->speedcmd)))
         {
           if( p->motorspeed_l + hyst >= p->speedcmd ||p->motorspeed_l - hyst >= p->speedcmd)
@@ -173,7 +171,7 @@ void update_motcon(motiontype *p)
         }
     }
 
-    if(p->curcmd == mot_turn )
+    if(p->curcmd == mot_turn)
     {
         double angle_travel;
         double angle_dist;
@@ -209,7 +207,29 @@ void update_motcon(motiontype *p)
             p->motorspeed_l=0;
             p->motorspeed_r=0;
             break;
-
+        case mot_follow_wall:
+            if((((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(laserpar[0]>=mot.walldist+0.2))&&laserpar[0]!=0)
+            {   
+                printf("\nFailed laserpar is %f\n",laserpar[0]);
+                p->finished=1;
+                p->motorspeed_l=0;
+                p->motorspeed_r=0;
+            }
+            else if((laserpar[0]<=fabs(mot.walldist+0.01))&&(laserpar[0]>=fabs(mot.walldist-0.01)))
+            {
+                printf("\nResetting speed\n");
+                p->motorspeed_l=speed;
+                p->motorspeed_r=speed;
+            }
+            else if(laserpar[0]<=mot.walldist-0.01)
+            {
+                p->motorspeed_r-=mot.dV;
+            }
+            else if (laserpar[0]>=mot.walldist+0.01)
+            {
+                p->motorspeed_l-=mot.dV;
+            }
+            break;
        case mot_follow_line_angle:
        case mot_move:
        case mot_follow_line:
@@ -229,8 +249,6 @@ void update_motcon(motiontype *p)
 		if((p->curcmd==mot_follow_line)||(p->curcmd==mot_follow_line_angle))
 		{
                 p->motorspeed_r-= mot.dV/2;
-		        //p->motorspeed_l+= mot.dV/2;
-                //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
 		}  
 		else  p->motorspeed_r-= mot.dV;         
 
@@ -241,7 +259,6 @@ void update_motcon(motiontype *p)
 		{
                 p->motorspeed_r+= mot.dV/2;
 		p->motorspeed_l-= mot.dV/2;
-                //printf("\n motorspeed_r: %f, motorspeed_l: %f", p->motorspeed_r, p->motorspeed_l);
 		}  
 		else  p->motorspeed_l-= mot.dV;  
             }
@@ -340,6 +357,20 @@ int follow_line_angle(double angle, double dist, double speed,int time, char col
         mot.speedcmd=speed;
         mot.dist=dist;
         mot.angle=angle;
+        return 0;
+    }
+    else
+        return mot.finished;
+}
+
+int follow_wall(double walldist, double dist, double speed, int time)
+{
+    if (time==0)
+    {
+        mot.cmd=mot_follow_wall;
+        mot.speedcmd=speed;
+        mot.dist=dist;
+        mot.walldist=walldist;
         return 0;
     }
     else
