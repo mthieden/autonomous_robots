@@ -70,13 +70,11 @@ int mission_follow_wall()
     {
 
         case ms_init:
-        	printf("\nInitialized mission\n");
             n=1;
             mission.state= ms_follow_wall;
             break;
 
         case ms_follow_wall:
-        	printf("\nFollowing wall, laserpar: %f\n",laserpar[0]);
             if (follow_wall(0.5,5,0.3,mission.time))  
             {
             	mission.state=ms_end;
@@ -84,7 +82,6 @@ int mission_follow_wall()
             break;
 
         case ms_end:
-        	printf("\nStopping\n");
             mot.cmd=mot_stop;
             return 1;
     }

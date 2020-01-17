@@ -73,7 +73,7 @@ void update_odo(odotype *p)
 
 void update_motcon(motiontype *p)
 {
-    double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
+    double accel = 0.5 /SAMPLERATE; // acceleration/sampletime
     double speed=0;
     odo.index=3.5; 
 
@@ -129,7 +129,6 @@ void update_motcon(motiontype *p)
 		    update_lin_sens();
             odo.index = lin_pos_com();
             mot.K = 15; //0.05
-		//printf("\n   line index : %d", line_index);
             double line_com = 0;
             double line_k = -0.076/25;//0.01;
             if (odo.index == -1)
@@ -148,7 +147,6 @@ void update_motcon(motiontype *p)
         }
         else if (p->curcmd==mot_follow_wall)
         {
-            printf("\nmot_follow_wall\n");
             mot.K=0.05;
             mot.domega = mot.K*(laserpar[0]-mot.walldist);
             mot.dV = fabs(mot.domega*(odo.w/2));
@@ -187,7 +185,6 @@ void update_motcon(motiontype *p)
         }
         double acceldist=(sqrt(2 * ((accel*SAMPLERATE)/2 )* (angle_dist - angle_travel)));
         double hyst = accel;
-        //printf("angle_dist : %f, angle_travel : %f  acceldist %f",angle_dist, angle_travel, acceldist);
 
         if(acceldist > fabs(p->motorspeed_l)/2 && !(fabs(p->motorspeed_l) > (p->speedcmd)/2))
         {
@@ -210,14 +207,13 @@ void update_motcon(motiontype *p)
         case mot_follow_wall:
             if((((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(laserpar[0]>=mot.walldist+0.2))&&laserpar[0]!=0)
             {   
-                printf("\nFailed laserpar is %f\n",laserpar[0]);
+                printf("\nReached end of wall\n");
                 p->finished=1;
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
             }
             else if((laserpar[0]<=fabs(mot.walldist+0.01))&&(laserpar[0]>=fabs(mot.walldist-0.01)))
             {
-                printf("\nResetting speed\n");
                 p->motorspeed_l=speed;
                 p->motorspeed_r=speed;
             }
