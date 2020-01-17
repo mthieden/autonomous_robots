@@ -281,7 +281,6 @@ int follow_line(double dist, double speed,int time, char colour)
 {
 
     if(colour!='w' && colour !='b')
-    //if(strcmp('w','w')!=0)
         {return -1;}
     else if (time==0)
     {
@@ -365,9 +364,9 @@ void update_lin_sens(void)
     }
 }
 
-int line_cross(int time)
+int line_cross()
 {
-    if(!time==0){
+    if(!mission.time==0){
     int line_trigger = 0;
     for(int i=0; i<8; i++)
     {

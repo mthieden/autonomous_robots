@@ -342,6 +342,8 @@ int main(int argc, char **argv)
         odo.right_enc=renc->data[0];
         update_odo(&odo);
 
+        update_lin_sens();
+
         /***********************************
          *  mission statemachine
          */
@@ -350,12 +352,18 @@ int main(int argc, char **argv)
         switch (mission_status)
         {
             case 0:
-                if(mission_find_start_point())
+                if(mission_laser())
+                {
                     mission_status++;
+                    mission.state=ms_init;
+                }
                 break;
             case 1:
-                if(mission_funky_wall())
+                if(mission_push_box())
+                {
                     mission_status++;
+                    mission.state=ms_init;
+                }
                 break;
             default:
                 running =0;
@@ -397,14 +405,7 @@ int main(int argc, char **argv)
         speedl->updated=1;
         speedr->data[0]=100*mot.motorspeed_r;
         speedr->updated=1;
-        /*
-        if (run_time  % 100 ==1)
-            printf(" laser : %f %f %f %f %f %f %f %f %f %f\n",laserpar[0],laserpar[1],laserpar[2],laserpar[3],laserpar[4],laserpar[5],laserpar[6],laserpar[7],laserpar[8],laserpar[9]);
-        run_time++;
-        */
-        /* stop if keyboard is activated
-         *
-         */
+
         ioctl(0, FIONREAD, &arg);
         if (arg!=0)  running=0;
 

@@ -106,43 +106,73 @@ int mission_fwd_turn()
     return 0;
 }
 
-int mission_find_start_point()
+int mission_push_box()
 {
     double dist=3;
-    double angle=-90.0/180*M_PI;
+    double angle=90.0/180*M_PI;
+    double objectdist=0;
+    printf("time %d, mission state : %d, n :%d\n", mission.time, mission.state, n);
     switch (mission.state)
     {
         case ms_init:
-            n=2;
+            n=4;
+            lines_crossed=0;
+            on_line=0;
             mission.state= ms_fwd;
             break;
 
         case ms_fwd:
-            if(n==2)
+            if(n==4)
             {
-                dist = 0.35;
+	            for(int i=1;i<=8;i++)
+                {
+					if(laserpar[i]<laserpar[i-1])
+					{
+						objectdist=laserpar[i]+0.235;
+					}
+				}
+                printf("objedist = %f ",objectdist);
+                if (fwd(dist,0.3,mission.time) ||objectdist<=0.4)
+                {
+                    mission.state= ms_turn;
+                }
             }
-            if(n==1)
+            if(n==3)
             {
-                dist = 0.2;
+                if(line_cross()==1)
+                {
+                    if(on_line ==0)
+                    {
+                        lines_crossed++;
+                    }
+                    on_line=1;
+                }
+                else
+                {
+                    on_line=0;
+                }
+                printf("line_cross = %d, on_line %d ",lines_crossed, on_line);
+                printf(" ls_calib = %f %f %f %f %f %f  ",LS_calib[0],LS_calib[1],LS_calib[2],LS_calib[3],LS_calib[4],LS_calib[5]);
+                if (fwd(dist,0.3,mission.time) ||lines_crossed==2)
+                    mission.state= ms_turn;
             }
 
-            if (fwd(dist,0.3,mission.time))  mission.state=ms_turn;
             break;
 
         case ms_turn:
-            if (n==2)
+            if (n==4)
             {
                 if (turn(angle,0.3,mission.time))
                 {
-                    n=n-1;
+                    n--;
+                    mission.state=ms_fwd;
                 }
             }
-            else
+            else if(n==3)
             {
                 if (turn(-angle,0.3,mission.time))
                 {
-                    n=n-1;
+                    n--;
                     if (n==0)
                         mission.state=ms_end;
                     else
@@ -185,11 +215,11 @@ int mission_funky_wall()
 }
 
 int mission_laser()
-{	
+{
 	double initialtheta=odo.theta;
 	double angle=initialtheta-90*M_PI/180;
    	double objectdist=0;
-   	double dist = 5;
+   	double dist = 4.5;
 
     switch (mission.state)
     {
