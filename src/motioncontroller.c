@@ -238,8 +238,8 @@ void update_motcon(motiontype *p)
             }
             else if (p->motorspeed_r<=0 && p->motorspeed_l<=0)
             {
-                p->motorspeed_r=0.05;
-                p->motorspeed_l=0.05;   
+                p->motorspeed_r=0.5*mot.speedcmd;
+                p->motorspeed_l=0.5*mot.speedcmd;   
             }
             else if(mot.dV==0)
             {
@@ -262,11 +262,13 @@ void update_motcon(motiontype *p)
             }
             else if (p->motorspeed_r<0)
             {
-                p->motorspeed_r=0.05;
+                p->motorspeed_r=0.2*speed;
+                p->motorspeed_l=speed;
             }
             else if (p->motorspeed_l<0)
             {
-                p->motorspeed_l=0.05;
+                p->motorspeed_r=speed;
+                p->motorspeed_l=0.2*speed;
             }
 
 
@@ -391,6 +393,7 @@ void update_lin_sens(void)
 {
     //laser_calib_black; 	//Low average
     //laser_calib_white; 	//High average
+    double scaling[8]={1,1,1,1,1,1,1,1};
     if (mot.fl_colour[0]=='b')
     {
         for(int i=0; i<8; i++)
@@ -407,17 +410,24 @@ void update_lin_sens(void)
         }
     }
     printf("followmode: %s\n", mot.fl_colour);
-    /*
-        if (mot.fl_colour[1]=='l')
+    
+    if (mot.fl_colour[1]=='r')
     {
-        double scaling[8]={1.4,1.3,1.2,1.1,1,0.9,0.8,0.7};
-        for (int i = 0; i < 8; ++i)
-        {
-            printf("following left\n");
-            LS_calib[i]=LS_calib[i]*scaling[i];
-        }
+        scaling[0]=1.6;
+        scaling[1]=1.4;
+        scaling[2]=1.2;
     }
-    */
+    
+    else if (mot.fl_colour[1]=='l')
+    {
+        scaling[7]=1.6;
+        scaling[6]=1.4;
+        scaling[5]=1.2;
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        LS_calib[i]=LS_calib[i]*scaling[i];
+    }
 
 
 
