@@ -292,8 +292,8 @@ int main(int argc, char **argv)
     fp = fopen(log_file_path, "w");
     if (fp != NULL )
     {
-        fprintf(fp ,"%14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s",
-                "time", "x", "y", "theta", "goal_theta", "motorspeed_l", "motorspeed_r", "speedcmd",
+        fprintf(fp ,"%14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s",
+                "time", "x", "y", "theta", "goal_theta", "mot.dV", "motorspeed_l", "motorspeed_r", "speedcmd",
                 "mission_state", "motiontype", "index", "linesensor0", "linesensor1", "linesensor2", "linesensor3",
                 "linesensor4", "linesensor5", "linesensor6", "linesensor7" );
         if (lmssrv.config && lmssrv.status && lmssrv.connected)
@@ -356,7 +356,7 @@ int main(int argc, char **argv)
         mot.right_pos=odo.right_pos;
         update_motcon(&mot);
 
-        fprintf(fp ,"%14d %14f %14f %14f %14f %14f %14f %14f %14d %14d %14f %14f %14f %14f %14f %14f %14f %14f %14f",
+        fprintf(fp ,"%14d %14f %14f %14f %14f %14f %14f %14f %14f %14d %14d %14f %14f %14f %14f %14f %14f %14f %14f %14f",
                 mission.time, odo.x, odo.y, odo.theta, mot.GoalTheta, mot.motorspeed_l, mot.motorspeed_r, mot.speedcmd,
                 mission.state, mot.curcmd, odo.index, LS_calib[0], LS_calib[1], LS_calib[2], LS_calib[3], LS_calib[4], LS_calib[5],
                 LS_calib[6], LS_calib[7] );

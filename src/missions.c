@@ -36,7 +36,6 @@ int mission_square()
 
 int mission_follow_line()
 {
-    double angle = angle=5.0/180*M_PI;
     switch (mission.state)
     {
 
@@ -47,11 +46,11 @@ int mission_follow_line()
 
         case ms_fwd:
 
-            if (fwd(0.5,0.3,mission.time))  mission.state=ms_follow;
+            if (fwd(0.1,0.3,mission.time) )  mission.state=ms_follow;
             break;
 
         case ms_follow:
-            if (follow_line(5,0.3,mission.time,'b'))  {
+            if (follow_line(4,0.3,mission.time,"bm"))  {
                 printf (  "follow \n ");
                 mission.state=ms_end;
             }
@@ -75,7 +74,7 @@ int mission_follow_wall()
             break;
 
         case ms_follow_wall:
-            if (follow_wall(0.5,5,0.3,mission.time))  
+            if (follow_wall(0.5,5,0.3,mission.time))
             {
             	mission.state=ms_end;
             }
@@ -116,7 +115,7 @@ int mission_fwd_turn()
             break;
 
         case ms_follow:
-            if (follow_line(5,0.1,mission.time,'b'))  {
+            if (follow_line(5,0.1,mission.time,"bm"))  {
                 printf (  "follow \n ");
                 mission.state=ms_end;
             }
@@ -130,7 +129,7 @@ int mission_fwd_turn()
 }
 
 int mission_laser()
-{	
+{
 	double initialtheta=odo.theta;
 	double angle=initialtheta-90*M_PI/180;
    	double objectdist=0;
