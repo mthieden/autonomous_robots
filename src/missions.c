@@ -273,4 +273,119 @@ int mission_funky_wall()
     return 0;
 }
 
+int mission_big_wall()
+{   
+    switch (mission.state)
+    {
+        case ms_init:
+            n=1;
+            mission.state=ms_fwd;
+            break;
+
+        case ms_turn:
+            if(n==4||n==8||n==10)
+            {
+                if(turn(-90*M_PI/180,0.3,mission.time))
+                {
+                    printf("\nDriving forward, missionstate:, %d\n",n);
+                    n++;
+                    mission.state=ms_fwd;
+                }
+
+            }
+            else if(n==2||n==14)
+            {
+                if(turn(-90*M_PI/180,0.3,mission.time))
+                {
+                    printf("\nFollowing line, missionstate: %d\n",n);
+                    n++;
+                    mission.state=ms_follow;
+                }
+            }
+            break;
+
+        case ms_fwd:
+            if (n==5||n==11)
+            {
+                if(fwd(0.5,0.3,mission.time))
+                {
+                    printf("\nFollowing wall, missionstate: %d\n",n);
+                    n++;
+                    mission.state=ms_follow_wall;
+                }
+            }
+            else if (n==1)
+            {
+                if(fwd(0.2,0.3,mission.time))
+                {
+                    printf("\nTurning, missionstate: %d\n",n);
+                    n++;
+                    mission.state=ms_turn;
+                }
+            }
+            else if (n==7)
+            {
+                if(fwd(0.5,0.3,mission.time))
+                {
+                    printf("\nTurning, missionstate: %d\n",n);
+                    n++;
+                    mission.state=ms_turn;
+                }
+            }
+            else if (n==9)
+            {
+                if(fwd(0.75,0.3,mission.time))
+                {
+                    printf("\nTurning, missionstate: %d\n",n);
+                    n++;
+                    mission.state=ms_turn;
+                }
+            }
+            else if (n==13)
+            {
+                if(fwd(0.4,0.3,mission.time)||line_cross())
+                {
+                    printf("\nTurning, missionstate: %d, line_cross: %d\n",n,line_cross());
+                    n++;
+                    mission.state=ms_turn;
+                }
+            }
+            break;
+
+        case ms_follow:
+            if(n==3)
+            {
+                if(follow_line(3,0.3,mission.time,"bm") || line_cross())
+                {
+                    printf("\nTurning, missionstate: %d\n",n);
+                    n++;
+                    mission.state=ms_turn;
+                }
+            }
+            else
+            {
+                if(follow_line(3,0.3,mission.time,"bm") || line_cross())
+                {
+                    printf("\nFinished run\n");
+                    n++;
+                    mission.state=ms_end;
+                }
+            }
+            break;
+
+        case ms_follow_wall:
+            if (follow_wall(0.35,5,0.3,mission.time))
+            {
+                printf("\nDriving forward, missionstate:, %d\n",n);
+                n++;
+                mission.state=ms_fwd;
+            }
+            break;
+
+        case ms_end:
+            mission.state=ms_init;
+            return 1;
+    }
+    return 0;
+}
 

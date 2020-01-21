@@ -140,7 +140,7 @@ void update_motcon(motiontype *p)
         else if (p->curcmd==mot_follow_wall)
         {
             mot.K=0.05;
-            mot.domega = mot.K*(laserpar[0]-mot.walldist);
+            mot.domega = mot.K*(laserpar[8]-mot.walldist);
             mot.dV = fabs(mot.domega*(odo.w/2));
 
         }
@@ -197,24 +197,24 @@ void update_motcon(motiontype *p)
             p->motorspeed_r=0;
             break;
        case mot_follow_wall:
-            if((((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(laserpar[0]>=mot.walldist+0.2))&&laserpar[0]!=0)
+            if((((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(laserpar[8]>=mot.walldist+0.2))&&laserpar[8]!=0)
             {   
                 p->finished=1;
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
             }
-            else if((laserpar[0]<=fabs(mot.walldist+0.01))&&(laserpar[0]>=fabs(mot.walldist-0.01)))
+            else if((laserpar[8]<=fabs(mot.walldist+0.01))&&(laserpar[8]>=fabs(mot.walldist-0.01)))
             {
                 p->motorspeed_l=speed;
                 p->motorspeed_r=speed;
             }
-            else if(laserpar[0]<=mot.walldist-0.01)
-            {
-                p->motorspeed_r-=mot.dV;
-            }
-            else if (laserpar[0]>=mot.walldist+0.01)
+            else if(laserpar[8]<=mot.walldist-0.01)
             {
                 p->motorspeed_l-=mot.dV;
+            }
+            else if (laserpar[8]>=mot.walldist+0.01)
+            {
+                p->motorspeed_r-=mot.dV;
             }
             break;
        case mot_move:
@@ -224,19 +224,18 @@ void update_motcon(motiontype *p)
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
             }
-            else if(fabs(mot.GoalTheta-odo.theta)<(5*M_PI)/180)
+            else if(fabs(mot.GoalTheta-odo.theta)<(1*M_PI)/180)
             {
                 p->motorspeed_l=speed;
                 p->motorspeed_r=speed;
             }
             else if(odo.theta>mot.GoalTheta)
             {   
-            if(p->curcmd==mot_follow_line)
-            {
-                p->motorspeed_r-= mot.dV/2;
-                p->motorspeed_l+= mot.dV/2;
-            }  
-            else  p->motorspeed_r-= mot.dV;         
+                p->motorspeed_r-= mot.dV;         
+            }
+            else if(odo.theta<mot.GoalTheta)
+            {   
+                p->motorspeed_l-= mot.dV;         
             }
 
        case mot_follow_line_angle:

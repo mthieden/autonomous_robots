@@ -363,6 +363,18 @@ int main(int argc, char **argv)
                     mission.state=ms_init;
                 }
                 break;
+            case 2:
+            	if(mission_gate())
+            	{
+            		mission_status++;
+            		mission.state=ms_init;
+            	}
+            case 3:
+            	if(mission_big_wall())
+            	{
+            		mission_status++;
+            		mission.state=ms_init;
+            	}
             default:
                 running =0;
                 break;
