@@ -92,7 +92,7 @@ typedef struct
 // Motion types
 enum {mot_stop=1,mot_move,mot_turn,mot_follow_line,mot_follow_line_angle,mot_follow_wall};
 // mission types
-enum {ms_init,ms_fwd,ms_turn,ms_end,ms_follow,ms_laser,ms_follow_wall};
+enum {ms_init,ms_fwd,ms_turn,ms_end,ms_follow,ms_laser,ms_follow_wall,ms_find_garage,ms_find_wall,ms_fwd_line_cross,ms_follow_wl};
 
 
 // Global varaibles

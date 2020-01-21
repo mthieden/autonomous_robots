@@ -139,9 +139,9 @@ int mission_laser()
     {
 
         case ms_init:
-        	printf("initlized initial y");
+        	//printf("initlized initial y");
         	initial_y=odo.y;
-        	mission.state= ms_laser;
+        	printf ("Linecross %d \n", line_cross());//mission.state= ms_laser;
             break;
 
         case ms_laser:
@@ -272,6 +272,88 @@ int mission_funky_wall()
     }
     return 0;
 }
+int mission_gate()
+{
+// We need a piece of codes that says if laser so and so then stop
+//Mission is initialized when it hits a line_cross()
+// 1. The SMR will have to follow the line until the laser senses a wall (Trigger laser dist<20 cm)
+// 2. It will continue to follow the line until the laser measurement varies (Trigger laser distance>25 cm)
+// 3. It will the drive fwd 5 cm, turn 90 deg, drive forward 0.5 meter, turn 90 degree, forward until linecross, turn 90 deg 
+// 4. Drive 1 meter forward 
+
+	switch (mission.state)
+	{
+		case ms_init:
+			n=4;
+			mission.state = ms_find_wall;
+			break;
+
+		case ms_find_wall:
+			printf("gate");
+			if (follow_line(5,0.1,mission.time,"bm") || (laserpar[0]<0.75 && laserpar[0]>0.50))
+			{
+			printf("laser1 %f \n",laserpar[0]);
+			mission.state=ms_follow_wall;
+			}
+			break;
+		
+	         case ms_follow_wall:	
+			if (follow_line(5,0.1,mission.time,"bm") || laserpar[0]>0.80)
+			{
+			printf("laser2 %f \n",laserpar[0]);
+			mission.state=ms_fwd;
+			}
+			break;
+
+		case ms_fwd:
+			if(n==4){
+				if(fwd(0.4,0.2,mission.time))
+				{
+				printf (  "fwd1 \n ");
+				mission.state=ms_turn;
+				}
+				break;     	
+			}
+			else if(n==3){
+				if(fwd(3,0.2,mission.time) || laserpar[4]<0.3)
+				{
+
+				mission.state=ms_turn;
+				}
+				break; 
+
+			}
+			else if(n==2){
+				if(fwd(3,0.2,mission.time)|| line_cross()==1)
+				{
+				printf("end");
+				mission.state=ms_end;
+				}
+			break;  
+
+			}
+		case ms_turn:
+			if(n==4){
+				if(turn(90.0/180*M_PI,0.1,mission.time)) {
+				mission.state=ms_fwd;
+				n--;
+				}
+ 				break;
+			}
+			else if(n==3){
+				if(turn(-89.0/180*M_PI,0.1,mission.time)) {
+				mission.state=ms_fwd;
+				n--;
+				}
+ 				break;
+			}
+
+    		case ms_end:
+            		mot.cmd=mot_stop;
+            		return 1;
+	}
+	return 0;
+}
 
 int mission_big_wall()
 {   
@@ -388,4 +470,193 @@ int mission_big_wall()
     }
     return 0;
 }
+int mission_garage()
+{
+// We need a piece of codes that says if laser so and so then stop
+//Mission is initialized when it hits a line_cross()
+// 1. The SMR will have to follow the line until the laser senses a wall (Trigger laser dist<20 cm)
+// 2. It will continue to follow the line until the laser measurement varies (Trigger laser distance>25 cm)
+// 3. It will the drive fwd 5 cm, turn 90 deg, drive forward 0.5 meter, turn 90 degree, forward until linecross, turn 90 deg 
+// 4. Drive 1 meter forward 
 
+	switch (mission.state)
+	{
+		case ms_init:
+			n=10;
+			mission.state = ms_turn;
+			break;
+
+		case ms_turn:
+			if(n==10){		
+				if (turn(-90.0/180*M_PI,0.1,mission.time))
+				{
+				printf (  "turn1 \n ");
+				mission.state=ms_find_garage;
+				n--;
+				}
+				break;
+			}
+			else if(n==9){
+				if (turn(90.0/180*M_PI,0.1,mission.time))
+				{
+				printf (  "turn2 \n ");
+				mission.state=ms_follow_wall;
+				n--;
+				}
+				break;
+			}	
+			else if(n==8){
+				if (turn(-90.0/180*M_PI,0.1,mission.time))
+				{
+				printf (  "turn3 \n ");
+				mission.state=ms_fwd;
+				}
+				break;
+			}	
+			else if(n==7){
+				if (turn(-90.0/180*M_PI,0.1,mission.time))
+				{
+				printf (  "turn4 \n ");
+				mission.state=ms_fwd;
+				}
+				break;
+			}
+			else if(n==6){
+				if (turn(-90.0/180*M_PI,0.1,mission.time))
+				{
+				printf (  "turn5 \n ");
+				mission.state=ms_fwd;
+				}
+				break;
+			}
+			else if(n==5){
+				if (turn(90.0/180*M_PI,0.1,mission.time))
+				{
+				printf (  "turn6 \n ");
+				mission.state=ms_fwd;
+				}
+				break;
+			}
+			else if(n==4){
+				if (turn(90.0/180*M_PI,0.1,mission.time))
+				{
+				printf (  "turn7 \n ");
+				mission.state=ms_fwd;
+				}
+				break;
+			}	
+
+
+		case ms_fwd:
+			if(n==8){		
+				if (fwd(0.5,0.2,mission.time))
+				{
+				printf (  "fwd1 \n ");
+				mission.state=ms_turn;
+				n--;
+				}
+				break;
+			}
+			else if(n==7){
+				if (fwd(0.5,0.2,mission.time))
+				{
+				printf (  "fwd2 \n ");
+				mission.state=ms_turn;
+				n--;
+				}
+				break;
+			}
+			else if(n==6){
+				if (fwd(0.4,0.2,mission.time))
+				{
+				printf (  "fwd3 \n ");
+				mission.state=ms_turn;
+				n--;
+				}
+				break;
+			}
+			else if(n==5){
+				if (fwd(0.4,0.2,mission.time))
+				{
+				printf (  "fwd4 \n ");
+				mission.state=ms_turn;
+				n--;
+				}
+				break;
+			}
+			else if(n==4){
+				if (fwd(0.5,0.2,mission.time))
+				{
+				printf (  "fwd5 \n ");
+				mission.state=ms_end;
+				}
+				break;
+			}
+
+		case ms_find_garage:
+			if (follow_line(5,0.1,mission.time,"bm") || line_cross()==1)
+			{
+			printf("wall found %f \n",laserpar[0]);
+			mission.state=ms_turn;
+			}
+			break;
+
+		case ms_follow_wall:
+			if(fwd(1,0.1,mission.time) || (laserpar[8]>5 && laserpar[8]<6))
+			{
+			printf("wall end %f \n",laserpar[0]);
+			mission.state=ms_turn;
+			}
+			break;
+    		case ms_end:
+            		mot.cmd=mot_stop;
+            		return 1;
+	}
+	return 0;
+}
+int mission5_wl()
+{
+    switch (mission.state)
+    {
+
+        case ms_init:
+            n=1;
+            mission.state=ms_turn;
+            break;
+
+        case ms_turn:
+            if (turn(90, 0.2,mission.time))
+            {
+                mission.state=ms_fwd;
+            }
+            break;
+
+        case ms_fwd:
+            if (fwd(0.2,0.3,mission.time))
+            {
+                mission.state=ms_follow_wl;
+            }
+            break;
+
+        case ms_follow_wl:
+            if (follow_line(3, 0.2,mission.time, "wm" )||line_cross())
+            {
+                mission.state=ms_fwd_line_cross;
+            }
+            break;
+
+        case ms_fwd_line_cross:
+            mot.fl_colour[1]='b';
+            if (fwd(0.5,0.3,mission.time)||line_cross())
+            {
+                mission.state=ms_end;
+            }
+            break;
+
+        case ms_end:
+            mot.cmd=mot_stop;
+            mission.state=ms_init;
+            return 1;
+    }
+    return 0;
+}
