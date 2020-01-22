@@ -81,7 +81,7 @@ void update_motcon(motiontype *p)
                 break;
             case mot_bck:
                 p->startpos=(p->left_pos+p->right_pos)/2;
-                p->curcmd=mot_move;
+                p->curcmd=mot_bck;
                 break;
             case mot_follow_line:
                 p->startpos=(p->left_pos+p->right_pos)/2;
@@ -324,7 +324,7 @@ void update_motcon(motiontype *p)
             }
             break;
        case mot_bck:
-            if ((p->right_pos+p->left_pos)/2- p->startpos > p->dist)
+            if (fabs((p->right_pos+p->left_pos)/2- p->startpos )> p->dist)
             {
                 p->finished=1;
                 p->motorspeed_l=0;
@@ -332,8 +332,8 @@ void update_motcon(motiontype *p)
             }
             else
             {
-                p->motorspeed_l=speed;
-                p->motorspeed_r=speed;
+                p->motorspeed_l=p->speedcmd;
+                p->motorspeed_r=p->speedcmd;
             }
             break;
     }
@@ -357,7 +357,7 @@ int bck(double dist, double speed,int time)
 {
     if (time==0)
     {
-        mot.cmd=mot_move;
+        mot.cmd=mot_bck;
         mot.speedcmd=speed;
         mot.dist=dist;
         return 0;

@@ -342,6 +342,7 @@ int main(int argc, char **argv)
         odo.left_enc=lenc->data[0];
         odo.right_enc=renc->data[0];
         update_odo(&odo);
+        update_lin_sens();
 
         /***********************************
          *  mission statemachine
