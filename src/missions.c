@@ -192,7 +192,7 @@ int mission_push_box()
                     }
                 }
                 printf("objedist = %f ",objectdist);
-                if (fwd(dist,0.3,mission.time) ||objectdist<=0.4)
+                if (bck(dist,0.3,mission.time) ||objectdist<=0.4)
                 {
                     mission.state= ms_turn;
                 }

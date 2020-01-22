@@ -90,7 +90,7 @@ typedef struct
 }motiontype;
 
 // Motion types
-enum {mot_stop=1,mot_move,mot_turn,mot_follow_line,mot_follow_line_angle,mot_follow_wall};
+enum {mot_stop=1,mot_move,mot_turn,mot_follow_line,mot_follow_line_angle,mot_follow_wall,mot_bck};
 // mission types
 enum {ms_init,ms_fwd,ms_turn,ms_end,ms_follow,ms_laser,ms_follow_wall,ms_find_garage,ms_find_wall,ms_fwd_line_cross,ms_follow_wl};
 
@@ -129,6 +129,7 @@ void update_ir(void);
 
 void update_motcon(motiontype *p);
 int fwd(double dist, double speed,int time);
+int bck(double dist, double speed,int time);
 int follow_line(double dist, double speed,int time, char colour[]);
 int follow_line_angle(double angle, double dist, double speed, int time, char colour[]);
 int follow_wall(double walldist, double dist, double speed, int time);

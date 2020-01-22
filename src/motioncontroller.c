@@ -65,7 +65,7 @@ void update_odo(odotype *p)
 void update_motcon(motiontype *p)
 {
     double accel = 0.5 /SAMPLERATE; // accelaration/sampletime
-    double speed=0;      
+    double speed=0;
 
     if (p->cmd !=0)
     {
@@ -76,6 +76,10 @@ void update_motcon(motiontype *p)
                 p->curcmd=mot_stop;
                 break;
             case mot_move:
+                p->startpos=(p->left_pos+p->right_pos)/2;
+                p->curcmd=mot_move;
+                break;
+            case mot_bck:
                 p->startpos=(p->left_pos+p->right_pos)/2;
                 p->curcmd=mot_move;
                 break;
@@ -198,7 +202,7 @@ void update_motcon(motiontype *p)
             break;
        case mot_follow_wall:
             if((((p->right_pos+p->left_pos)/2- p->startpos > p->dist)||(laserpar[8]>=mot.walldist+0.2))&&laserpar[8]!=0)
-            {   
+            {
                 p->finished=1;
                 p->motorspeed_l=0;
                 p->motorspeed_r=0;
@@ -230,12 +234,12 @@ void update_motcon(motiontype *p)
                 p->motorspeed_r=speed;
             }
             else if(odo.theta>mot.GoalTheta)
-            {   
-                p->motorspeed_r-= mot.dV;         
+            {
+                p->motorspeed_r-= mot.dV;
             }
             else if(odo.theta<mot.GoalTheta)
-            {   
-                p->motorspeed_l-= mot.dV;         
+            {
+                p->motorspeed_l-= mot.dV;
             }
 
        case mot_follow_line_angle:
@@ -250,21 +254,21 @@ void update_motcon(motiontype *p)
             else if (p->motorspeed_r<=0 && p->motorspeed_l<=0)
             {
                 p->motorspeed_r=0.5*mot.speedcmd;
-                p->motorspeed_l=0.5*mot.speedcmd;   
+                p->motorspeed_l=0.5*mot.speedcmd;
             }
             else if(mot.dV==0)
             {
                 p->motorspeed_l=speed;
                 p->motorspeed_r=speed;
             }
-            else if(mot.dV >0 && p->motorspeed_l>=0) 
+            else if(mot.dV >0 && p->motorspeed_l>=0)
             {
                 if (p->motorspeed_l>speed)
                     {p->motorspeed_l=speed;}
                 else
                     p->motorspeed_l-=fabs(mot.dV);
             }
-            else if(mot.dV <0 && p->motorspeed_r>=0) 
+            else if(mot.dV <0 && p->motorspeed_r>=0)
             {
                 if (p->motorspeed_r>speed)
                     {p->motorspeed_r=speed;}
@@ -319,11 +323,37 @@ void update_motcon(motiontype *p)
                 }
             }
             break;
+       case mot_bck:
+            if ((p->right_pos+p->left_pos)/2- p->startpos > p->dist)
+            {
+                p->finished=1;
+                p->motorspeed_l=0;
+                p->motorspeed_r=0;
+            }
+            else
+            {
+                p->motorspeed_l=speed;
+                p->motorspeed_r=speed;
+            }
+            break;
     }
 }
 
 
 int fwd(double dist, double speed,int time)
+{
+    if (time==0)
+    {
+        mot.cmd=mot_move;
+        mot.speedcmd=speed;
+        mot.dist=dist;
+        return 0;
+    }
+    else
+        return mot.finished;
+}
+
+int bck(double dist, double speed,int time)
 {
     if (time==0)
     {
@@ -438,7 +468,7 @@ void update_lin_sens(void)
     {
         for(int i=0; i<8; i++)
         {
-            LS_calib[i]=1-((linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]));        
+            LS_calib[i]=1-((linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]));
         }
     }
 
@@ -449,14 +479,14 @@ void update_lin_sens(void)
             LS_calib[i]=(linesensor->data[i]-laser_calib_black[i])/(laser_calib_white[i]-laser_calib_black[i]);
         }
     }
-    
+
     if (mot.fl_colour[1]=='r')
     {
         scaling[0]=1.6;
         scaling[1]=1.4;
         scaling[2]=1.2;
     }
-    
+
     else if (mot.fl_colour[1]=='l')
     {
         scaling[7]=1.6;
