@@ -23,14 +23,6 @@ symTableElement* getoutputref (const char *sym_name, symTableElement * tab)
     return 0;
 }
 
-
-/*
- * Routines to convert encoder values to positions.
- * Encoder steps have to be converted to meters, and
- * roll-over has to be detected and corrected.
- */
-
-
 void reset_odo(odotype * p)
 {
     p->right_pos = p->left_pos = 0.0;
